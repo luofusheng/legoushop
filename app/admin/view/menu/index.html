@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>menu</title>
+    <link rel="stylesheet" href="/static/admin/lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/lib/font-awesome-4.7.0/css/font-awesome.min.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/public.css" media="all">
+    <style>
+        .layui-btn:not(.layui-btn-lg ):not(.layui-btn-sm):not(.layui-btn-xs) {
+            height: 34px;
+            line-height: 34px;
+            padding: 0 8px;
+        }
+    </style>
+</head>
+<body>
+<div class="layuimini-container">
+    <div class="layuimini-main">
+        <div>
+            <div class="layui-btn-group">
+                <button class="layui-btn" id="btn-expand">全部展开</button>
+                <button class="layui-btn layui-btn-normal" id="btn-fold">全部折叠</button>
+            </div>
+            <table id="munu-table" class="layui-table" lay-filter="munu-table"></table>
+        </div>
+    </div>
+</div>
+{// 头部操作按钮 }
+<script type="text/html" id="toolbarDemo">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-normal layui-btn-sm data-add-btn" lay-event="add"> 添加 </button>
+    </div>
+</script>
+
+<!-- 操作列 -->
+<script type="text/html" id="auth-state">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script src="/static/admin/lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script src="/static/admin/js/lay-config.js?v=1.0.4" charset="utf-8"></script>
+<script>
+    layui.use(['table', 'treetable'], function () {
+        var $ = layui.jquery;
+        var table = layui.table;
+        var treetable = layui.treetable;
+
+        // 渲染表格
+        layer.load(2);
+        treetable.render({
+            treeColIndex: 1,
+            treeSpid: 0,
+            treeIdName: 'id',
+            treePidName: 'pid',
+            elem: '#munu-table',
+            height: 'full-108',
+            url: '/admin/menu/list',
+            toolbar: '#toolbarDemo',
+            page: false,
+            cols: [[
+                {type: 'numbers', fixed: 'left'},
+                {field: 'title', minWidth: 150, title: '菜单名称', fixed: 'left'},
+                {field: 'icon', minWidth: 80, title: '菜单图标',
+                templet: '<div><i class="{{d.icon}}"></i></div>'},
+                {field: 'href', minWidth: 80, title: '链接'},
+                {field: 'target', minWidth: 80, title: '链接打开方式'},
+                {field: 'sort', minWidth: 80, title: '菜单排序'},
+                {field: 'status', minWidth: 80, title: '状态'},
+                {field: 'controller', minWidth: 80, title: '控制器'},
+                {field: 'action', minWidth: 80, title: '操作方法'},
+                {field: 'is_nav', minWidth: 80, title: '导航菜单'},
+                {field: 'remark', minWidth: 80, title: '备注信息'},
+                {templet: '#auth-state', width: 120, align: 'center', title: '操作'}
+            ]],
+            done: function () {
+                layer.closeAll('loading');
+            }
+        });
+
+        $('#btn-expand').click(function () {
+            treetable.expandAll('#munu-table');
+        });
+
+        $('#btn-fold').click(function () {
+            treetable.foldAll('#munu-table');
+        });
+
+        //监听工具条
+        table.on('tool(munu-table)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'del') {
+                layer.confirm('确定删除吗？', {icon:3, title:'操作确认'}, function (index) {
+                    layer.close(index);
+                    // 向服务端发送删除指令
+                    $.post('/admin/menu/delete', {id:data.id}, function (res) {
+                        if (res.code == 0) {
+                            obj.del();
+                            layer.msg(res.msg, {icon: 1});
+                        } else if (res.code == 302) {
+                            location.href = '/admin/error/' + res.msg;
+                        } else {
+                            layer.msg(res.msg, {icon: 2});
+                        }
+                    }, 'json');
+                });
+            } else if (layEvent === 'edit') {
+                var index = layer.open({
+                    title: '修改菜单',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: '/admin/menu/edit?id='+data.id,
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+        });
+
+        // toobar监听事件
+        table.on('toolbar(munu-table)', function (obj) {
+            if (obj.event === 'add') {  // 监听添加操作
+                var index = layer.open({
+                    title: '添加菜单',
+                    type: 2,
+                    shade: 0.2,
+                    maxmin:true,
+                    shadeClose: true,
+                    area: ['100%', '100%'],
+                    content: '/admin/menu/add/',
+                });
+                $(window).on("resize", function () {
+                    layer.full(index);
+                });
+            }
+        })
+    });
+</script>
+</body>
+</html>

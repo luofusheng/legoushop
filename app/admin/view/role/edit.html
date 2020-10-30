@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="csrf-token" content="{:token()}">
+    <link rel="stylesheet" href="/static/admin/lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form">
+        <input type="hidden" name="id" value="{$role['id']}">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">角色名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="name" lay-verify="required|name" lay-reqtext="角色名不能为空" placeholder="请输入角色名" value="{$role.name}" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+                <input type="text" name="desc" lay-verify="desc" value="{$role.desc}" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">权限菜单</label>
+            <hr>
+            <div class="layui-input-block">
+                <div id="menuTree" menulist="{$menuList}"></div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+            </div>
+        </div>
+</div>
+<script src="/static/admin/lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layer', 'tree'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            tree = layui.tree,
+            $ = layui.$;
+
+        // 递归获取权限菜单的菜单id
+        var getCheckData = function (checkData, menuList) {
+            for (let i=0; i<checkData.length; i++) {
+                menuList.push(checkData[i].id);
+                // 如果有子数组
+                if (checkData[i].children.length > 0) {
+                    getCheckData(checkData[i].children, menuList);
+                }
+            }
+        };
+
+        // 菜单树
+        var menuTree = tree.render({
+            elem: '#menuTree',
+            showCheckbox: true,
+            data: JSON.parse($('#menuTree').attr('menulist')),
+            id: 'menuTree'
+        });
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            //获取权限菜单树中被选中的节点数据
+            var checkData = tree.getChecked('menuTree');
+            data.field.menus = [];
+            getCheckData(checkData, data.field.menus);
+
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.post('/admin/role/update', data.field, function (res) {
+                if (res.code == 0) {
+                    // 添加成功
+                    layer.msg(res.msg, {
+                        icon:1,
+                        time: 1000
+                    },function () {
+                        // 重新加载父页面
+                        parent.location.reload();
+                    });
+                } else if (res.code == 302) {
+                    location.href = '/admin/error/' + res.msg;
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            }, 'json');
+            return false;
+        });
+        
+        // 自定义验证规则
+        form.verify({
+            name: function (value, item) {
+                if (value.length > 20) {
+                    return '用户名不能超过20个字符';
+                }
+            },
+            desc: function (value, item) {
+                if (value.length > 255) {
+                    return '备注不能超过255个字符'
+                }
+            }
+        })
+    });
+</script>
+</body>
+</html>

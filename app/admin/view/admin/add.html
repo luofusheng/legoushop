@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="csrf-token" content="{:token()}">
+    <link rel="stylesheet" href="/static/admin/lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label required">用户名</label>
+            <div class="layui-input-block">
+                <input type="text" name="username" lay-verify="required|username" lay-reqtext="用户名不能为空" placeholder="请输入用户名" value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">昵称</label>
+            <div class="layui-input-block">
+                <input type="text" name="nickname" lay-verify="nickname" placeholder="请输入昵称" value="" class="layui-input">
+                <tip>如果不填写表示默认使用用户名作为昵称</tip>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">密码</label>
+            <div class="layui-input-block">
+                <input type="password" name="password" lay-verify="required|password" lay-reqtext="密码不能为空" placeholder="请输入密码" value="" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label required">角色</label>
+            <div class="layui-input-block">
+                <select name="role" lay-verify="required" lay-search>
+                    <option value=""></option>
+                    {foreach $roleList as $v}
+                    <option value="{$v.id}">{$v.name}</option>
+                    {/foreach}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+            </div>
+        </div>
+</div>
+<script src="/static/admin/lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layer'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.post('/admin/admin/save', data.field, function (res) {
+                if (res.code == 0) {
+                    // 添加成功
+                    layer.msg(res.msg, {
+                        icon:1,
+                        time: 1000
+                    },function () {
+                        // 重新加载父页面
+                        parent.location.reload();
+                    });
+                } else if (res.code == 302) {
+                    location.href = '/admin/error/' + res.msg;
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            }, 'json');
+            return false;
+        });
+        
+        // 自定义验证规则
+        form.verify({
+            username: function (value, item) {
+                if (value.length > 20) {
+                    return '用户名不能超过20个字符';
+                }
+                if(!/^\w+$/.test(value)){
+                    return '用户名只能包含字母、数字和下划线';
+                }
+                if(/(^\_)|(\__)|(\_+$)/.test(value)){
+                    return '用户名首尾不能出现下划线\'_\'';
+                }
+                if(/^\d/.test(value)){
+                    return '用户名第一个字符不能为数字';
+                }
+            },
+            nickname: function (value, item) {
+                if (value.length > 20) {
+                    return '昵称不能超过20个字符';
+                }
+            },
+            password: function (value, item) {
+                if (!/^\S{6,20}$/.test(value)) {
+                    return '密码要在6-20位之间'
+                }
+            }
+        })
+    });
+</script>
+</body>
+</html>
