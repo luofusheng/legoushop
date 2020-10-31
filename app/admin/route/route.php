@@ -120,3 +120,11 @@ Route::group('goods_category', function () {
     // 商品分类列表删除接口
     Route::post('delete', 'GoodsCategory/delete');
 });
+
+// 商品列表
+Route::group('goods_list', function () {
+    // 商品列表展示页
+    Route::get('/', 'GoodsList/index');
+    // 商品列表数据接口
+    Route::get('list', 'GoodsList/list');
+});
