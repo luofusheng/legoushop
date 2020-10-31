@@ -100,3 +100,23 @@ Route::group('brand', function () {
     // 商品品牌列表多选删除接口
     Route::post('delete-multi', 'brand/deleteMulti');
 });
+
+// 商品分类管理
+Route::group('goods_category', function () {
+    // 商品分类管理列表
+    Route::get('/', 'GoodsCategory/index');
+    // 商品分类列表数据接口
+    Route::get('list', 'GoodsCategory/list');
+    // 商品分类添加页面
+    Route::get('add', 'GoodsCategory/add');
+    // 商品分类上传图片接口
+    Route::post('upload', 'GoodsCategory/upload');
+    // 商品分类添加页面保存接口
+    Route::post('save', 'GoodsCategory/save')->token();
+    // 商品分类修改页面
+    Route::get('edit', 'GoodsCategory/edit');
+    // 商品分类修改页面保存接口
+    Route::post('update', 'GoodsCategory/update')->token();
+    // 商品分类列表删除接口
+    Route::post('delete', 'GoodsCategory/delete');
+});

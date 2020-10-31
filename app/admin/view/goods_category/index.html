@@ -56,22 +56,15 @@
             treePidName: 'pid',
             elem: '#munu-table',
             height: 'full-108',
-            url: '/admin/menu/list',
+            url: '/admin/goods_category/list',
             toolbar: '#toolbarDemo',
             page: false,
             cols: [[
                 {type: 'numbers'},
-                {field: 'title', minWidth: 150, title: '菜单名称'},
-                {field: 'icon', minWidth: 80, title: '菜单图标',
-                templet: '<div><i class="{{d.icon}}"></i></div>'},
-                {field: 'href', minWidth: 80, title: '链接'},
-                {field: 'target', minWidth: 80, title: '链接打开方式'},
-                {field: 'sort', minWidth: 80, title: '菜单排序'},
-                {field: 'status', minWidth: 80, title: '状态'},
-                {field: 'controller', minWidth: 80, title: '控制器'},
-                {field: 'action', minWidth: 80, title: '操作方法'},
-                {field: 'is_nav', minWidth: 80, title: '导航菜单'},
-                {field: 'remark', minWidth: 80, title: '备注信息'},
+                {field: 'name', minWidth: 150, title: '分类名称'},
+                {field: 'image', minWidth: 80, title: '分类图片',
+                templet: '<div><img src="{{d.image}}"></div>'},
+                {field: 'sort', minWidth: 80, title: '排序'},
                 {templet: '#auth-state', width: 120, align: 'center', title: '操作'}
             ]],
             done: function () {
@@ -96,7 +89,7 @@
                 layer.confirm('确定删除吗？', {icon:3, title:'操作确认'}, function (index) {
                     layer.close(index);
                     // 向服务端发送删除指令
-                    $.post('/admin/menu/delete', {id:data.id}, function (res) {
+                    $.post('/admin/goods_category/delete', {id:data.id}, function (res) {
                         if (res.code == 0) {
                             obj.del();
                             layer.msg(res.msg, {icon: 1});
@@ -109,13 +102,13 @@
                 });
             } else if (layEvent === 'edit') {
                 var index = layer.open({
-                    title: '修改菜单',
+                    title: '修改分类',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '/admin/menu/edit?id='+data.id,
+                    content: '/admin/goods_category/edit?id='+data.id,
                 });
                 $(window).on("resize", function () {
                     layer.full(index);
@@ -127,13 +120,13 @@
         table.on('toolbar(munu-table)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
-                    title: '添加菜单',
+                    title: '添加分类',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '/admin/menu/add/',
+                    content: '/admin/goods_category/add/',
                 });
                 $(window).on("resize", function () {
                     layer.full(index);
