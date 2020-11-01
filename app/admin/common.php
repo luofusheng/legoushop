@@ -17,7 +17,7 @@ if (!function_exists('encrypt_password')) {
 if (!function_exists('verify_password')) {
 
     /**
-     * 密码加密函数
+     * 密码验证函数
      * @param string $password 密码
      * @param string $hash 数据库中存储的hash密码
      * @return boolean 如果匹配则返回true，否则返回false
@@ -72,5 +72,20 @@ if (!function_exists('set_checked_menus')) {
             }
         }
         unset($menu);
+    }
+}
+
+if (!function_exists('get_cate_list')) {
+    //递归函数 实现无限级分类列表
+    function get_cate_list($list,$pid=0,$level=0) {
+        static $tree = array();
+        foreach($list as $row) {
+            if($row['pid']==$pid) {
+                $row['level'] = $level;
+                $tree[] = $row;
+                get_cate_list($list, $row['id'], $level + 1);
+            }
+        }
+        return $tree;
     }
 }

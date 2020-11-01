@@ -32,7 +32,10 @@ class GoodsCategory extends Base
     public function add()
     {
         // 查询到所有分类
-        $categoryList = \app\admin\model\GoodsCategory::field('id,name')->select()->toArray();
+        $categoryList = \app\admin\model\GoodsCategory::field('id,pid,name,level')
+            ->where('level', '<', 2)
+            ->select()->toArray();
+        $categoryList = get_cate_list($categoryList);
 
         return view('', [
             'categoryList' => $categoryList
@@ -85,6 +88,24 @@ class GoodsCategory extends Base
             ]);
         }
 
+        // 补充数据库表剩下的参数
+        if ($params['pid'] == 0) {  // 如果添加的是顶级分类
+            $params['pid_path'] = '0';
+            $params['pid_path_name'] = '';
+            $params['level'] = 0;
+        } else {    // 如果添加的是非顶级分类
+            // 先获取父级分类
+            $pCategory = \app\admin\model\GoodsCategory::find($params['pid'])->toArray();
+            $params['pid_path'] = $pCategory['pid_path'] . '_' . $params['pid'];
+            if (empty($pCategory['pid_path_name'])) {
+                $params['pid_path_name'] = $pCategory['name'];
+            } else {
+                $params['pid_path_name'] = $pCategory['pid_path_name'] . '_' . $pCategory['name'];
+            }
+            $params['level'] = $pCategory['level'] + 1;
+        }
+
+        // 图片处理
         if (!empty($params['image'])) {
             // 将图片从临时temp文件夹中迁移到goods_category文件夹中
             // 传过来的临时文件路径为：/uploads/image/temp/20201030/d885cc3b24b184a7c631408b5e0f670e.jpg
@@ -119,7 +140,10 @@ class GoodsCategory extends Base
         $category = \app\admin\model\GoodsCategory::find($id)->toArray();
 
         // 查询到所有分类
-        $categoryList = \app\admin\model\GoodsCategory::field('id,name')->select()->toArray();
+        $categoryList = \app\admin\model\GoodsCategory::field('id,pid,name,level')
+            ->where('level', '<', 2)
+            ->select()->toArray();
+        $categoryList = get_cate_list($categoryList);
 
         return view('', [
             'category' => $category,
@@ -146,6 +170,23 @@ class GoodsCategory extends Base
                 'code' => 1,
                 'msg' => $validate->getError()
             ]);
+        }
+
+        // 补充数据库表剩下的参数
+        if ($params['pid'] == 0) {  // 如果修改后是顶级分类
+            $params['pid_path'] = '0';
+            $params['pid_path_name'] = '';
+            $params['level'] = 0;
+        } else {    // 如果修改后不是顶级分类
+            // 先获取父级分类
+            $pCategory = \app\admin\model\GoodsCategory::find($params['pid'])->toArray();
+            $params['pid_path'] = $pCategory['pid_path'] . '_' . $params['pid'];
+            if (empty($pCategory['pid_path_name'])) {
+                $params['pid_path_name'] = $pCategory['name'];
+            } else {
+                $params['pid_path_name'] = $pCategory['pid_path_name'] . '_' . $pCategory['name'];
+            }
+            $params['level'] = $pCategory['level'] + 1;
         }
 
         // 判断分类图片有没有被改动

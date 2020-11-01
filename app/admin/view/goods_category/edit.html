@@ -32,7 +32,7 @@
                 <select name="pid" lay-verify="required" lay-search>
                     <option value="0">顶级分类</option>
                     {foreach $categoryList as $v}
-                    <option value="{$v.id}" {$v.id==$category.pid?'selected':''}>{$v.name}</option>
+                    <option value="{$v.id}" {$v.id==$category.pid?'selected':''}>{:str_repeat('&emsp;', $v.level*2)}{$v.name}</option>
                     {/foreach}
                 </select>
             </div>
