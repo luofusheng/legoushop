@@ -20,7 +20,8 @@ class GoodsList extends Base
         $limit = request()->param('limit');
         $name = request()->param('name');
 
-        $goodsList = GoodsSpu::field('id,name,goods_category_id,is_on_sale,price,stock')
+        $goodsList = GoodsSpu::with(['goodsCategory'])
+            ->field('id,name,goods_category_id,is_on_sale,price,stock')
             ->where([
                 ['name', 'like', '%'.$name.'%']
             ])
@@ -32,15 +33,26 @@ class GoodsList extends Base
                     'name' => $name
                 ]
             ]);
-        $godsListData = $goodsList->toArray()['data'];
+        $goodsListData = $goodsList->toArray()['data'];
+        // 添加分类完整路径数据
+        foreach ($goodsListData as &$v) {
+            $v['category'] = $v['category_pid_pathname'] .'/' . $v['category_name'];
+        }
+        unset($v);
 
         $data = [
             'code' => 0,
             'msg' => '',
             'count' => $goodsList->total(),
-            'data' => $godsListData
+            'data' => $goodsListData
         ];
 
         return json($data);
+    }
+
+    // 商品列表添加页面
+    public function add()
+    {
+        return view();
     }
 }

@@ -127,4 +127,6 @@ Route::group('goods_list', function () {
     Route::get('/', 'GoodsList/index');
     // 商品列表数据接口
     Route::get('list', 'GoodsList/list');
+    // 商品列表添加页面
+    Route::get('add', 'GoodsList/add');
 });

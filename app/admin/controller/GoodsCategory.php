@@ -100,7 +100,7 @@ class GoodsCategory extends Base
             if (empty($pCategory['pid_path_name'])) {
                 $params['pid_path_name'] = $pCategory['name'];
             } else {
-                $params['pid_path_name'] = $pCategory['pid_path_name'] . '_' . $pCategory['name'];
+                $params['pid_path_name'] = $pCategory['pid_path_name'] . '/' . $pCategory['name'];
             }
             $params['level'] = $pCategory['level'] + 1;
         }
@@ -184,7 +184,7 @@ class GoodsCategory extends Base
             if (empty($pCategory['pid_path_name'])) {
                 $params['pid_path_name'] = $pCategory['name'];
             } else {
-                $params['pid_path_name'] = $pCategory['pid_path_name'] . '_' . $pCategory['name'];
+                $params['pid_path_name'] = $pCategory['pid_path_name'] . '/' . $pCategory['name'];
             }
             $params['level'] = $pCategory['level'] + 1;
         }
@@ -225,7 +225,9 @@ class GoodsCategory extends Base
         $id = (int)trim(input('post.id', '', 'strip_tags'));
         // 删除对应的分类图片
         $category = \app\admin\model\GoodsCategory::find($id);
-        unlink('./' . $category->image);
+        if (!empty($category->image)) {
+            unlink('./' . $category->image);
+        }
         \app\admin\model\GoodsCategory::destroy($id);
         return json([
             'code' => 0,

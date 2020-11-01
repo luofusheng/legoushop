@@ -68,7 +68,7 @@
                 {type: "checkbox", width: 50},
                 {field: 'id', width: 80, title: 'ID', sort: true},
                 {field: 'name', width: 200, title: '商品名称'},
-                {field: 'goods_category_id', width: 100, title: '分类'},
+                {field: 'category', width: 100, title: '分类'},
                 {field: 'is_on_sale', width: 100, title: '状态'},
                 {field: 'price', width: 100, title: '价格'},
                 {field: 'stock', width: 100, title: '库存'},
@@ -102,13 +102,13 @@
         table.on('toolbar(currentTableFilter)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
-                    title: '添加品牌',
+                    title: '添加商品',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '/admin/brand/add/',
+                    content: '/admin/goods_list/add/',
                 });
                 $(window).on("resize", function () {
                     layer.full(index);
