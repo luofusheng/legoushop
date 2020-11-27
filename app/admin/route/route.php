@@ -121,6 +121,18 @@ Route::group('goods_category', function () {
     Route::post('delete', 'GoodsCategory/delete');
 });
 
+// 商品模型
+Route::group('goods_type', function () {
+    // 商品模型列表页
+    Route::get('/', 'GoodsType/index');
+    // 商品模型列表数据接口
+    Route::get('list', 'GoodsType/list');
+    // 商品模型添加页面
+    Route::get('add', 'GoodsType/add');
+    // 商品模型添加页面保存接口
+    Route::post('save', 'GoodsType/save')->token();
+});
+
 // 商品列表
 Route::group('goods_list', function () {
     // 商品列表展示页
