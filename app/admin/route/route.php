@@ -133,6 +133,12 @@ Route::group('goods_type', function () {
     Route::post('save', 'GoodsType/save')->token();
     // 商品模型修改页面
     Route::get('edit', 'GoodsType/edit');
+    // 商品模型修改页面保存接口
+    Route::post('update', 'GoodsType/update')->token();
+    // 商品模型列表删除接口
+    Route::post('delete', 'GoodsType/delete');
+    // 商品模型列表多选删除接口
+    Route::post('delete-multi', 'GoodsType/deleteMulti');
 });
 
 // 商品列表

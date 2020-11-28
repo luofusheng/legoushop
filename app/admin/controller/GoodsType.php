@@ -163,6 +163,148 @@ class GoodsType extends Base
     // 商品模型修改页面
     public function edit()
     {
+        $id = (int)input('get.id', '', 'strip_tags');
 
+        // 查询得到商品模型所有数据
+        $goodsType = \app\admin\model\GoodsType::with(['goodsSpecName.goodsSpecValue', 'goodsAttr'])->find($id);
+
+        return view('', [
+            'goodsTypeData' => $goodsType->toArray()
+        ]);
+    }
+
+    // 商品模型修改页面保存接口
+    public function update()
+    {
+        // 接收参数，其中，$typeData参数结构和save方法中的一样
+        $typeData = input('post.type_data', '', 'strip_tags');
+        $id = input('post.id', '', 'strip_tags');
+
+        Db::startTrans();
+        try {
+            // 修改模型名称
+            \app\admin\model\GoodsType::update(['name' => $typeData['name']], ['id' => $id]);
+            // 先删除掉该模型的所有规格和属性
+            // 删除模型规格名
+            GoodsSpecName::where('goods_type_id', '=', $id)->delete();
+            // 删除模型规格值
+            GoodsSpecValue::where('goods_type_id', '=', $id)->delete();
+            // 删除模型属性
+            GoodsAttr::where('goods_type_id', '=', $id)->delete();
+
+            // 然后重新添加规格和属性
+            // 批量添加商品模型中对应的商品规格名
+            $specNameList = [];
+            foreach ($typeData['spec'] as $k=>$v) {
+                $specNameList[] = [
+                    'name' => $v['spec_name'],
+                    'sort' => $v['spec_sort'],
+                    'goods_type_id' => $id
+                ];
+            }
+            $goodsSpecName = new GoodsSpecName();
+            $specNameData = $goodsSpecName->saveAll($specNameList);
+            // 批量添加商品模型中对应的商品规格值
+            $specValueList = [];
+            foreach ($specNameData as $k=>$v) {
+                foreach ($typeData['spec'][$k]['spec_value'] as $kk) {
+                    $specValueList[] = [
+                        'goods_spec_name_id' => $v['id'],
+                        'value' => $kk,
+                        'goods_type_id' => $id
+                    ];
+                }
+            }
+            $goodsSpecValue = new GoodsSpecValue();
+            $goodsSpecValue->saveAll($specValueList);
+            // 批量添加商品模型中对应的商品属性
+            $attrList = [];
+            foreach ($typeData['attr'] as $k=>$v) {
+                $attrList[] = [
+                    'name' => $v['attr_name'],
+                    'value' => $v['attr_value'],
+                    'sort' => $v['attr_sort'],
+                    'goods_type_id' => $id
+                ];
+            }
+            $goodsAttr = new GoodsAttr();
+            $goodsAttr->saveAll($attrList);
+
+            // 提交事务
+            Db::commit();
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            // 返回操作失败信息
+            return json([
+                'code' => 1,
+                'msg' => '保存失败'
+            ]);
+        }
+
+        return json([
+            'code' => 0,
+            'msg' => '保存成功'
+        ]);
+    }
+
+    // 商品模型列表删除接口
+    public function delete()
+    {
+        $id = (int)trim(input('post.id', '', 'strip_tags'));
+
+        Db::startTrans();
+        try {
+            \app\admin\model\GoodsType::destroy($id);
+            GoodsSpecName::where('goods_type_id', '=', $id)->delete();
+            GoodsSpecValue::where('goods_type_id', '=', $id)->delete();
+            GoodsAttr::where('goods_type_id', '=', $id)->delete();
+
+            // 提交事务
+            Db::commit();
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            // 返回操作失败信息
+            return json([
+                'code' => 1,
+                'msg' => '删除失败'
+            ]);
+        }
+
+        return json([
+            'code' => 0,
+            'msg' => '删除成功'
+        ]);
+    }
+
+    // 商品模型列表多选删除接口
+    public function deleteMulti()
+    {
+        $ids = input('post.ids', '', 'strip_tags');
+
+        Db::startTrans();
+        try {
+            \app\admin\model\GoodsType::destroy($ids);
+            GoodsSpecName::where('goods_type_id', 'in', $ids)->delete();
+            GoodsSpecValue::where('goods_type_id', 'in', $ids)->delete();
+            GoodsAttr::where('goods_type_id', 'in', $ids)->delete();
+
+            // 提交事务
+            Db::commit();
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            // 返回操作失败信息
+            return json([
+                'code' => 1,
+                'msg' => '删除失败'
+            ]);
+        }
+
+        return json([
+            'code' => 0,
+            'msg' => '删除成功'
+        ]);
     }
 }

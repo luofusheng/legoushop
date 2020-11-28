@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="csrf-token" content="{:token()}">
+    <link rel="stylesheet" href="/static/admin/lib/layui-v2.5.5/css/layui.css" media="all">
+    <link rel="stylesheet" href="/static/admin/css/public.css" media="all">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+        .new_spec_value {
+            width: 80px;
+            height: 30px;
+            outline: none;
+            border: 1px solid #cccccc;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .spec_value {
+            display: inline-block;
+            margin-top: 8px;
+        }
+        .spec_value input {
+            width: 80px;
+            height: 30px;
+            outline: none;
+            border: 1px solid #cccccc;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        .spec_value .del_spec_value {
+            position: relative;
+            top: -12px;
+            left: -16px;
+            width: 18px;
+            height: 18px;
+            border: 1px solid #ccc;
+            line-height: 18px;
+            text-align: center;
+            display: inline-block;
+            border-radius: 50%;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+<body>
+<div class="layui-form layuimini-form">
+    <input type="hidden" name="id" value="{$goodsTypeData['id']}" id="goodsTypeId">
+    <div class="layui-form-item">
+        <label class="layui-form-label required">模型名称</label>
+        <div class="layui-input-block">
+            <input type="text" name="name" lay-verify="required|name" lay-reqtext="模型名称不能为空" placeholder="请输入模型名称"
+                   value="{$goodsTypeData['name']}" class="layui-input model_name">
+        </div>
+    </div>
+    <button type="button" class="layui-btn add_spec">新增规格</button>
+    <table class="layui-table spec">
+        <colgroup>
+            <col width="150">
+            <col width="200">
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>规格名称</th>
+            <th>排序</th>
+            <th>规格值</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {foreach $goodsTypeData['goodsSpecName'] as $k=>$v }
+        <tr>
+            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input spec_name" value="{$v['name']}"></td>
+            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input spec_sort" value="{$v['sort']}"></td>
+            <td class="spec_values">
+                {foreach $v['goodsSpecValue'] as $kk=>$vv}
+                <div class="spec_value">
+                    <input type="text" name="" value="{$vv['value']}">
+                    <span class="del_spec_value">x</span>
+                </div>
+                {/foreach}
+                <input type="text" class="new_spec_value">
+                <button type="button" class="layui-btn layui-btn-xs add_spec_value">添加</button>
+            </td>
+            <td>
+                <button type="button" class="layui-btn layui-btn-danger layui-btn-xs del_spec">删除</button>
+            </td>
+        </tr>
+        {/foreach}
+        </tbody>
+    </table>
+
+    <button type="button" class="layui-btn add_attr" style="margin-top: 30px;">新增属性</button>
+    <table class="layui-table attr">
+        <colgroup>
+            <col width="150">
+            <col width="200">
+            <col>
+        </colgroup>
+        <thead>
+        <tr>
+            <th>属性名称</th>
+            <th>排序</th>
+            <th>属性值</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {foreach $goodsTypeData['goodsAttr'] as $k=>$v }
+        <tr>
+            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_name" value="{$v['name']}"></td>
+            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_sort" value="{$v['sort']}"></td>
+            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_value" style="width: 200px;margin: 0 auto;" value="{$v['value']}"></td>
+            <td>
+                <button type="button" class="layui-btn layui-btn-danger layui-btn-xs del_attr">删除</button>
+            </td>
+        </tr>
+        {/foreach}
+        </tbody>
+    </table>
+
+    <div class="layui-form-item">
+        <div class="layui-input-block">
+            <button class="layui-btn layui-btn-normal" lay-submit lay-filter="saveBtn">确认保存</button>
+        </div>
+    </div>
+</div>
+<script src="/static/admin/lib/jquery-3.4.1/jquery-3.4.1.min.js"></script>
+<script src="/static/admin/lib/layui-v2.5.5/layui.js" charset="utf-8"></script>
+<script>
+    layui.use(['form', 'layer', 'upload'], function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.$;
+
+        $(function () {
+            // 绑定添加规格值事件
+            $('.spec').on('click', '.add_spec_value', function () {
+                var value = $(this).prev('.new_spec_value').val();
+                if (value == '' || value == null || typeof value == 'undefined') {
+                    layer.alert('规格值名称不能为空', {icon: 2});
+                    return;
+                }
+                $(this).prev().before('<div class="spec_value">\n' +
+                    '                    <input type="text" name="" value="'+ value +'">\n' +
+                    '                    <span class="del_spec_value">x</span>\n' +
+                    '                </div>');
+                $(this).prev('.new_spec_value').val('');
+            });
+
+            // 绑定删除规格值事件
+            $('.spec').on('click', '.del_spec_value', function () {
+                $(this).parent().remove();
+            });
+
+            // 绑定删除规格事件
+            $('.spec').on('click', '.del_spec', function () {
+                $(this).closest('tr').remove();
+            });
+
+            // 绑定新增规格事件
+            $('.add_spec').on('click', function () {
+                $(this).next('table').find('tbody').append('<tr>\n' +
+                    '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input spec_name"></td>\n' +
+                    '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input spec_sort"></td>\n' +
+                    '            <td class="spec_values">\n' +
+                    '                <input type="text" class="new_spec_value">\n' +
+                    '                <button type="button" class="layui-btn layui-btn-xs add_spec_value">添加</button>\n' +
+                    '            </td>\n' +
+                    '            <td>'+
+                    '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs del_spec">删除</button>'
+                    +'           </td>\n' +
+                    '        </tr>');
+            });
+
+            // 绑定删除属性事件
+            $('.attr').on('click', '.del_attr', function () {
+                $(this).closest('tr').remove();
+            });
+
+            // 绑定新增属性事件
+            $('.add_attr').on('click', function () {
+                $(this).next('table').find('tbody').append('<tr>\n' +
+                    '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_name"></td>\n' +
+                    '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_sort"></td>\n' +
+                    '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_value" style="width: 200px;margin: 0 auto;"></td>\n' +
+                    '            <td>\n' +
+                    '                <button type="button" class="layui-btn layui-btn-danger layui-btn-xs del_attr">删除</button>\n' +
+                    '            </td>\n' +
+                    '        </tr>');
+            });
+
+        });
+
+        //监听提交
+        form.on('submit(saveBtn)', function (data) {
+            // 获取数据
+            // 当前要修改的模型id
+            var goodsTypeId = $('#goodsTypeId').val();
+            // 最终数据都会存放在这个对象中
+            var model_data = {
+                name: '',
+                spec: [],
+                attr: []
+            };
+            model_data.name = $('.model_name').val();
+            // 添加规格
+            $('.spec>tbody>tr').each(function(i,v) {
+                var spec = {};
+                // 要添加的规格名称
+                var spec_name_value = $(v).find('.spec_name').val();
+                if (spec_name_value == '' || spec_name_value == null || spec_name_value == 'undefined') {
+                    // 跳出当前循环
+                    return true;
+                }
+                spec.spec_name = $(v).find('.spec_name').val();
+                // 要添加的规格排序
+                spec.spec_sort = $(v).find('.spec_sort').val();
+                // 要添加的规格值数组
+                spec.spec_value = [];
+                $(v).find('.spec_value').each(function (i,v) {
+                    // 遍历添加规格值
+                    value = $(v).find('input').val();
+                    if (!(value == '' || value == null || typeof value == 'undefined')) {
+                        spec.spec_value.push(value);
+                    }
+                });
+                model_data.spec.push(spec);
+            });
+            // 添加属性
+            $('.attr>tbody>tr').each(function (i,v) {
+                var attr = {};
+                // 要添加的属性名称
+                var attr_name_value = $(v).find('.attr_name').val();
+                if (attr_name_value == '' || attr_name_value == null || attr_name_value == 'undefined') {
+                    // 跳出当前循环
+                    return true;
+                }
+                attr.attr_name = attr_name_value;
+                // 要添加的属性排序
+                attr.attr_sort = $(v).find('.attr_sort').val();
+                // 要添加的属性值
+                attr.attr_value = $(v).find('.attr_value').val();
+                model_data.attr.push(attr);
+            });
+
+            // 将数据传递给后端
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.post('/admin/goods_type/update', {type_data:model_data, id:goodsTypeId}, function (res) {
+                if (res.code == 0) {
+                    // 添加成功
+                    layer.msg(res.msg, {
+                        icon: 1,
+                        time: 1000
+                    }, function () {
+                        // 重新加载父页面
+                        parent.location.reload();
+                    });
+                } else if (res.code == 302) {
+                    location.href = '/admin/error/' + res.msg;
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            }, 'json');
+            return false;
+        });
+
+        // 自定义验证规则
+        form.verify({
+            name: function (value, item) {
+                if (value.length > 20) {
+                    return '模型名称不能超过20个字符';
+                }
+            }
+        })
+    });
+</script>
+</body>
+</html>
