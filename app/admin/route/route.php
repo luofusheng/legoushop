@@ -131,6 +131,8 @@ Route::group('goods_type', function () {
     Route::get('add', 'GoodsType/add');
     // 商品模型添加页面保存接口
     Route::post('save', 'GoodsType/save')->token();
+    // 商品模型修改页面
+    Route::get('edit', 'GoodsType/edit');
 });
 
 // 商品列表

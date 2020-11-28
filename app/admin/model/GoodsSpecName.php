@@ -8,7 +8,7 @@ use think\Model;
 /**
  * @mixin \think\Model
  */
-class GoodsType extends Model
+class GoodsSpecName extends Model
 {
     // 关闭自动时间戳
     protected $autoWriteTimestamp = false;

@@ -98,7 +98,7 @@
         table.on('toolbar(currentTableFilter)', function (obj) {
             if (obj.event === 'add') {  // 监听添加操作
                 var index = layer.open({
-                    title: '添加品牌',
+                    title: '添加商品模型',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
@@ -115,7 +115,7 @@
                         , data = checkStatus.data;
                     var length = data.length;
                     if (length<1) {
-                        layer.msg('请选择品牌');
+                        layer.msg('请选择模型');
                         return;
                     }
                     var ids = [];

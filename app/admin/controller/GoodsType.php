@@ -3,6 +3,11 @@ declare (strict_types = 1);
 
 namespace app\admin\controller;
 
+use app\admin\model\GoodsAttr;
+use app\admin\model\GoodsSpecName;
+use app\admin\model\GoodsSpecValue;
+use think\facade\Db;
+
 class GoodsType extends Base
 {
     // 模型列表列表页
@@ -92,6 +97,72 @@ class GoodsType extends Base
          */
 
         $typeData = input('post.type_data', '', 'strip_tags');
+
+        Db::startTrans();
+        try {
+            // 添加商品模型
+            $goodsType = \app\admin\model\GoodsType::create([
+                'name' => $typeData['name']
+            ]);
+            // 批量添加商品模型中对应的商品规格名
+            $specNameList = [];
+            foreach ($typeData['spec'] as $k=>$v) {
+                $specNameList[] = [
+                    'name' => $v['spec_name'],
+                    'sort' => $v['spec_sort'],
+                    'goods_type_id' => $goodsType->id
+                ];
+            }
+            $goodsSpecName = new GoodsSpecName();
+            $specNameData = $goodsSpecName->saveAll($specNameList);
+            // 批量添加商品模型中对应的商品规格值
+            $specValueList = [];
+            foreach ($specNameData as $k=>$v) {
+                foreach ($typeData['spec'][$k]['spec_value'] as $kk) {
+                    $specValueList[] = [
+                        'goods_spec_name_id' => $v['id'],
+                        'value' => $kk,
+                        'goods_type_id' => $goodsType->id
+                    ];
+                }
+            }
+            $goodsSpecValue = new GoodsSpecValue();
+            $goodsSpecValue->saveAll($specValueList);
+            // 批量添加商品模型中对应的商品属性
+            $attrList = [];
+            foreach ($typeData['attr'] as $k=>$v) {
+                $attrList[] = [
+                    'name' => $v['attr_name'],
+                    'value' => $v['attr_value'],
+                    'sort' => $v['attr_sort'],
+                    'goods_type_id' => $goodsType->id
+                ];
+            }
+            $goodsAttr = new GoodsAttr();
+            $goodsAttr->saveAll($attrList);
+
+            // 提交事务
+            Db::commit();
+        } catch (\Exception $e) {
+            // 回滚事务
+            Db::rollback();
+            // 返回操作失败信息
+            return json([
+                'code' => 1,
+                'msg' => '保存失败'
+            ]);
+        }
+
+        return json([
+            'code' => 0,
+            'msg' => '保存成功'
+        ]);
+
+    }
+
+    // 商品模型修改页面
+    public function edit()
+    {
 
     }
 }
