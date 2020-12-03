@@ -149,4 +149,16 @@ Route::group('goods_list', function () {
     Route::get('list', 'GoodsList/list');
     // 商品列表添加页面
     Route::get('add', 'GoodsList/add');
+    // 商品列表添加页面获取品牌数据接口
+    Route::get('get_brand', 'GoodsList/getBrand');
+    // 商品logo图片上传接口
+    Route::post('upload_logo', 'GoodsList/uploadLogo');
+    // 详情描述富文本编辑器图片上传接口
+    Route::post('upload_img', 'GoodsList/uploadImg');
+    // 商品列表添加页面保存接口
+    Route::post('save', 'GoodsList/save');
+    // 商品列表相册图片上传接口
+    Route::post('upload_gallery', 'GoodsList/uploadGallery');
+    // 获取选中的模型规格属性数据接口
+    Route::post('get_spec_attr', 'GoodsList/getSpecAttr');
 });

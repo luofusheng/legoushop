@@ -100,12 +100,12 @@ class Brand extends Base
             // 传过来的临时文件路径为：/uploads/image/temp/20201030/d885cc3b24b184a7c631408b5e0f670e.jpg
             // 要迁移的文件路径：/uploads/image/brand/20201030/d885cc3b24b184a7c631408b5e0f670e.jpg
             // 新建日期文件夹
-            $tempArray = explode('/', $params['image']);
+            $tempArray = explode('/', $params['logo']);
             $imageFloder = './uploads/image/brand/' . $tempArray[4];
             if (!is_dir($imageFloder)) {
                 mkdir($imageFloder, 0777, true);
             }
-            $tempImg = '.' . $params['image'];
+            $tempImg = '.' . $params['logo'];
             $newImg = str_replace('/temp/', '/brand/', $tempImg);
             // 转移图片
             rename($tempImg, $newImg);

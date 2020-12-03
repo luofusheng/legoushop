@@ -31,7 +31,7 @@ if (!function_exists('verify_password')) {
 
 if (!function_exists('get_tree_list')) {
     /**
-     * 引用方式实现 父子级树状结构
+     * 引用方式实现 父子级树状结构 该版本最后一级有空children元素
      *
      * @param array $list 数据库表结构的数组
      * @return array|mixed
@@ -87,5 +87,28 @@ if (!function_exists('get_cate_list')) {
             }
         }
         return $tree;
+    }
+}
+
+if (!function_exists('get_tree_list2')) {
+    /**
+     * 引用方式实现 父子级树状结构 该版本最后一级没有空children元素
+     *
+     * @param array $list 数据库表结构的数组
+     * @return array|mixed
+     */
+    function get_tree_list2($list)
+    {
+        //将每条数据中的id值作为其下标
+        $temp = [];
+        foreach ($list as $v) {
+            // $v['children'] = [];
+            $temp[$v['id']] = $v;
+        }
+        //获取分类树
+        foreach ($temp as $k => $v) {
+            $temp[$v['pid']]['children'][] = &$temp[$v['id']];
+        }
+        return isset($temp[0]['children']) ? $temp[0]['children'] : [];
     }
 }
