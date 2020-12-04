@@ -84,12 +84,20 @@ class GoodsType extends Base
                 [0]=>array(3) {
                     ["attr_name"]=>string(6) "产地"
                     ["attr_sort"]=>string(1) "0"
-                    ["attr_value"]=>string(12) "中国大陆"
+                    ["attr_value"]=>array(3) {
+                        [0]=>string(2) "中国大陆"
+                        [1]=>string(3) "台湾"
+                        [2]=>string(3) "香港"
+                    }
                 }
                 [1]=>array(3) {
                     ["attr_name"]=>string(6) "重量"
                     ["attr_sort"]=>string(1) "0"
-                    ["attr_value"]=>string(5) "1.2kg"
+                    ["attr_value"]=>array(3) {
+                        [0]=>string(2) "1.2kg"
+                        [1]=>string(3) "2kg"
+                        [2]=>string(3) "2.5kg"
+                    }
                 }
             }
         }
@@ -131,10 +139,16 @@ class GoodsType extends Base
             // 批量添加商品模型中对应的商品属性
             $attrList = [];
             foreach ($typeData['attr'] as $k=>$v) {
+                // 用来存放属性值的字符串
+                $attrValues = '';
+                foreach ($v['attr_value'] as $vv) {
+                    $attrValues = $attrValues . $vv . ',';
+                }
+                $attrValues = rtrim($attrValues, ',');
                 $attrList[] = [
                     'name' => $v['attr_name'],
-                    'value' => $v['attr_value'],
                     'sort' => $v['attr_sort'],
+                    'values' => $attrValues,
                     'goods_type_id' => $goodsType->id
                 ];
             }
@@ -166,10 +180,15 @@ class GoodsType extends Base
         $id = (int)input('get.id', '', 'strip_tags');
 
         // 查询得到商品模型所有数据
-        $goodsType = \app\admin\model\GoodsType::with(['goodsSpecName.goodsSpecValue', 'goodsAttr'])->find($id);
+        $goodsType = \app\admin\model\GoodsType::with(['goodsSpecName.goodsSpecValue', 'goodsAttr'])->find($id)->toArray();
+        // 将商品属性值字符串分割成一个数组，数组里面包含所有的属性值
+        foreach ($goodsType['goodsAttr'] as &$v) {
+            $v['values'] = explode(',', $v['values']);
+        }
+        unset($v);
 
         return view('', [
-            'goodsTypeData' => $goodsType->toArray()
+            'goodsTypeData' => $goodsType
         ]);
     }
 
@@ -220,10 +239,16 @@ class GoodsType extends Base
             // 批量添加商品模型中对应的商品属性
             $attrList = [];
             foreach ($typeData['attr'] as $k=>$v) {
+                // 用来存放属性值的字符串
+                $attrValues = '';
+                foreach ($v['attr_value'] as $vv) {
+                    $attrValues = $attrValues . $vv . ',';
+                }
+                $attrValues = rtrim($attrValues, ',');
                 $attrList[] = [
                     'name' => $v['attr_name'],
-                    'value' => $v['attr_value'],
                     'sort' => $v['attr_sort'],
+                    'values' => $attrValues,
                     'goods_type_id' => $id
                 ];
             }

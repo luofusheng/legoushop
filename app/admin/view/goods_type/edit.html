@@ -13,7 +13,7 @@
         body {
             background-color: #ffffff;
         }
-        .new_spec_value {
+        .new_spec_value,.new_attr_value {
             width: 80px;
             height: 30px;
             outline: none;
@@ -22,11 +22,11 @@
             white-space: nowrap;
             text-overflow: ellipsis;
         }
-        .spec_value {
+        .spec_value,.attr_value {
             display: inline-block;
             margin-top: 8px;
         }
-        .spec_value input {
+        .spec_value input,.attr_value input {
             width: 80px;
             height: 30px;
             outline: none;
@@ -35,7 +35,7 @@
             white-space: nowrap;
             text-overflow: ellipsis;
         }
-        .spec_value .del_spec_value {
+        .spec_value .del_spec_value,.attr_value .del_attr_value {
             position: relative;
             top: -12px;
             left: -16px;
@@ -120,7 +120,16 @@
         <tr>
             <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_name" value="{$v['name']}"></td>
             <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_sort" value="{$v['sort']}"></td>
-            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_value" style="width: 200px;margin: 0 auto;" value="{$v['value']}"></td>
+            <td class="attr_values">
+                {foreach $v['values'] as $vv}
+                <div class="attr_value">
+                    <input type="text" name="" value="{$vv}">
+                    <span class="del_attr_value">x</span>
+                </div>
+                {/foreach}
+                <input type="text" class="new_attr_value">
+                <button type="button" class="layui-btn layui-btn-xs add_attr_value">添加</button>
+            </td>
             <td>
                 <button type="button" class="layui-btn layui-btn-danger layui-btn-xs del_attr">删除</button>
             </td>
@@ -183,6 +192,25 @@
                     '        </tr>');
             });
 
+            // 绑定添加属性值事件
+            $('.attr').on('click', '.add_attr_value', function () {
+                var value = $(this).prev('.new_attr_value').val();
+                if (value == '' || value == null || typeof value == 'undefined') {
+                    layer.alert('属性值名称不能为空', {icon: 2});
+                    return;
+                }
+                $(this).prev().before('<div class="attr_value">\n' +
+                    '                    <input type="text" name="" value="'+ value +'">\n' +
+                    '                    <span class="del_attr_value">x</span>\n' +
+                    '                </div>');
+                $(this).prev('.new_attr_value').val('');
+            });
+
+            // 绑定删除属性值事件
+            $('.attr').on('click', '.del_attr_value', function () {
+                $(this).parent().remove();
+            });
+
             // 绑定删除属性事件
             $('.attr').on('click', '.del_attr', function () {
                 $(this).closest('tr').remove();
@@ -193,12 +221,16 @@
                 $(this).next('table').find('tbody').append('<tr>\n' +
                     '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_name"></td>\n' +
                     '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_sort"></td>\n' +
-                    '            <td><input type="text" name="" lay-verify="title" autocomplete="off" class="layui-input attr_value" style="width: 200px;margin: 0 auto;"></td>\n' +
-                    '            <td>\n' +
-                    '                <button type="button" class="layui-btn layui-btn-danger layui-btn-xs del_attr">删除</button>\n' +
+                    '            <td class="attr_values">\n' +
+                    '                <input type="text" class="new_attr_value">\n' +
+                    '                <button type="button" class="layui-btn layui-btn-xs add_attr_value">添加</button>\n' +
                     '            </td>\n' +
+                    '            <td>'+
+                    '<button type="button" class="layui-btn layui-btn-danger layui-btn-xs del_attr">删除</button>'
+                    +'           </td>\n' +
                     '        </tr>');
             });
+
 
         });
 
@@ -246,11 +278,18 @@
                     // 跳出当前循环
                     return true;
                 }
-                attr.attr_name = attr_name_value;
+                attr.attr_name = $(v).find('.attr_name').val();
                 // 要添加的属性排序
                 attr.attr_sort = $(v).find('.attr_sort').val();
-                // 要添加的属性值
-                attr.attr_value = $(v).find('.attr_value').val();
+                // 要添加的属性值数组
+                attr.attr_value = [];
+                $(v).find('.attr_value').each(function (i,v) {
+                    // 遍历添加属性值
+                    var value = $(v).find('input').val();
+                    if (!(value == '' || value == null || typeof value == 'undefined')) {
+                        attr.attr_value.push(value);
+                    }
+                });
                 model_data.attr.push(attr);
             });
 
