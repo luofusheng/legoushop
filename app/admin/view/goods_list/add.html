@@ -136,11 +136,11 @@
                         <div class="layui-upload-list" id="goods_pic_preview"></div>
                     </blockquote>
                 </div>
-                    <input type="hidden" name="goods_gallery" id="goods_pic_upload" value="">
+                <input type="hidden" name="goods_gallery" id="goods_pic_upload" value="">
 
-                    <div class="layui-input-block">
-                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="general">确认保存</button>
-                    </div>
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="general">确认保存</button>
+                </div>
             </div>
             <div class="layui-tab-item">
                 <div class="layui-form-item">
@@ -175,8 +175,10 @@
 
                             </tbody>
                         </table>
-                        <table class="layui-table">
+                        <table class="layui-table" id="spec_input_tab">
                             <tbody>
+                                {/*
+                                最终会拼接成这样的样式
                                 <tr>
                                     <td><b>颜色</b></td>
                                     <td><b>内存</b></td>
@@ -185,27 +187,32 @@
                                     <td><b>库存</b></td>
                                     <td><b>操作</b></td>
                                 </tr>
-                                <tr>
-
-                                </tr>
+                                */ }
                             </tbody>
                         </table>
                     </div>
                     <div class="goods_attr">
                         <table class="layui-table" id="goods_attr_table">
                             <tbody>
-                                <tr><td colspan="2"><b>商品属性</b></td></tr>
-                                <tr>
-                                    <td>重量</td>
-                                    <td>1.2kg</td>
-                                </tr>
-                                <tr>
-                                    <td>版本</td>
-                                    <td>美版</td>
-                                </tr>
+                            {/*
+                            最终会拼接成这样的样式
+                            <tr><td colspan="2"><b>商品属性</b></td></tr>
+                            <tr>
+                                <td>重量</td>
+                                <td>1.2kg</td>
+                            </tr>
+                            <tr>
+                                <td>版本</td>
+                                <td>美版</td>
+                            </tr>
+                            */ }
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="general">确认保存</button>
                 </div>
             </div>
         </div>
@@ -226,6 +233,163 @@
             tableSelect = layui.tableSelect,
             upload = layui.upload,
             selectN = layui.selectN;
+
+        // 页面加载事件
+        $(function () {
+            // 商品规格按钮点击选中事件
+            $('#goods_spec_table1').on('click', 'button', function () {
+                // 给当前按钮添加btn-success类并改变样式
+                $(this).toggleClass('btn-success').toggleClass('layui-btn-primary');
+                // 存放所有规格值的数组
+                var spec_data = {};
+                // 将所有被选中的规格值按钮按照所属的规格分类整理
+                // 找到所有被选中的规格的按钮，然后遍历这些按钮
+                $('.spec_name').find('button.btn-success').each(function (i,v) {
+                    // 获取当前遍历到的规格值按钮所属的规格（一行）的index索引
+                    var index = $(v).closest('tr').index();
+                    // 获取当前遍历到的规格值按钮所属的规格的规格id
+                    var spec_id = $(v).closest('tr').attr('spec_id');
+                    // 获取当前遍历到的规格值按钮所属的规格的规格名称
+                    var spec_name = $(v).closest('tr').find('td:first').attr('spec_name');
+                    // 获取当前遍历到的规格值按钮的规格值id
+                    var spec_value_id = $(v).attr('spec_value_id');
+                    // 获取当前遍历到的规格值按钮的规格值名称
+                    var spec_value = $(v).text();
+                    if (spec_data[index] == undefined) spec_data[index] = [];
+                    // 根据index将获取到的所有的规格值按钮的参数归类到不同的规格名中
+                    spec_data[index].push({spec_id:spec_id,spec_name:spec_name,spec_value_id:spec_value_id,spec_value:spec_value});
+                });
+                // 最终spec_data的结构
+                /*
+                {
+                    [
+                        {spec_id: "22", spec_name: "颜色", spec_value_id: "55", spec_value: "红色"},
+                        {spec_id: "22", spec_name: "颜色", spec_value_id: "56", spec_value: "白色"},
+                        {spec_id: "22", spec_name: "颜色", spec_value_id: "57", spec_value: "蓝色"}
+                    ],
+                    [
+                        {spec_id: "23", spec_name: "内存", spec_value_id: "58", spec_value: "4+64"},
+                        {spec_id: "23", spec_name: "内存", spec_value_id: "59", spec_value: "4+128"},
+                        {spec_id: "23", spec_name: "内存", spec_value_id: "60", spec_value: "6+128"}
+                    ],
+                    [
+                        {spec_id: "24", spec_name: "网络", spec_value_id: "61", spec_value: "移动/联通"},
+                        {spec_id: "24", spec_name: "网络", spec_value_id: "62", spec_value: "电信"},
+                        {spec_id: "24", spec_name: "网络", spec_value_id: "63", spec_value: "全网通"}
+                    ]
+                }
+                 */
+                // 将规格数据由对象转换成数组格式
+                var spec_arr = [];
+                for (let i in spec_data) {
+                    spec_arr.push(spec_data[i]);
+                }
+                console.log(spec_arr);
+                // 最终spec_arr的结构
+                /*
+                [
+                    [
+                        {spec_id: "22", spec_name: "颜色", spec_value_id: "55", spec_value: "红色"},
+                        {spec_id: "22", spec_name: "颜色", spec_value_id: "56", spec_value: "白色"},
+                        {spec_id: "22", spec_name: "颜色", spec_value_id: "57", spec_value: "蓝色"}
+                    ],
+                    [
+                        {spec_id: "23", spec_name: "内存", spec_value_id: "58", spec_value: "4+64"},
+                        {spec_id: "23", spec_name: "内存", spec_value_id: "59", spec_value: "4+128"},
+                        {spec_id: "23", spec_name: "内存", spec_value_id: "60", spec_value: "6+128"}
+                    ],
+                    [
+                        {spec_id: "24", spec_name: "网络", spec_value_id: "61", spec_value: "移动/联通"},
+                        {spec_id: "24", spec_name: "网络", spec_value_id: "62", spec_value: "电信"},
+                        {spec_id: "24", spec_name: "网络", spec_value_id: "63", spec_value: "全网通"}
+                    ]
+                ]
+                 */
+                // 计算所有规格值数组的笛卡尔积
+                // 思路：先计算两个规格数组的笛卡尔积，将结果暂存起来，然后再将结果和第三个规格数组计算笛卡尔积，然后再将
+                // 结果暂存起来，如此反复，直到最后一个规格数组
+                var result = spec_arr[0];
+                for (let i=1; i<spec_arr.length; i++) {
+                    var temp = [];
+                    $.each(result, function (j,v1) {
+                        $.each(spec_arr[i], function (k,v2) {
+                            if ($.isArray(v1)) {
+                                let sk = v1.slice(0);
+                                sk.push(v2);
+                                temp.push(sk);
+                            } else {
+                                temp.push([v1, v2]);
+                            }
+                        });
+                    });
+                    result = temp;
+                }
+                // 拼接DOM字符串
+                var html = '';
+                // 拼接第一行
+                html += '<tr>';
+                if ($.isArray(result[0]) == false) {
+                    html += '<td><b>' + result[0].spec_name + '</b></td>';
+                } else {
+                    $.each(result[0], function (i,v) {
+                        html += '<td><b>' + v.spec_name + '</b></td>';
+                    });
+                }
+                html += '<td><b>价格</b></td>';
+                html += '<td><b>库存</b></td>';
+                html += '<td><b>操作</b></td>';
+                html += '</tr>';
+                // 拼接批量填充行
+                html += '<tr>';
+                if ($.isArray(result[0]) == false) {
+                    html += '<td><b></b></td>';
+                } else {
+                    $.each(result[0], function (i,v) {
+                        html += '<td><b></b></td>';
+                    });
+                }
+                html += '<td><input id="item_price" value="0" class="layui-input"></td>';
+                html += '<td><input id="item_store_count" value="0" class="layui-input"></td>';
+                html += '<td><button id="item_fill" type="button" class="layui-btn layui-btn-sm btn-success">批量填充</button></td>';
+                html += '</tr>';
+                // 继续拼接
+                $.each(result, function (i,v) {
+                    html += '<tr>';
+                    if ($.isArray(v) == false) {
+                        var value_ids = v.spec_value_id;
+                        var value_names = v.spec_name + ':' + v.spec_value;
+                        html += '<td>' + v.spec_value + '</td>';
+                    } else {
+                        var value_ids = '';
+                        var value_names = '';
+                        $.each(v, function (i2,v2) {
+                            html += '<td>' + v2.spec_value + '</td>';
+                            value_ids += v2.spec_value_id + '_';
+                            value_names += v2.spec_name + ':' + v2.spec_value + ' ';
+                        });
+                        value_ids = value_ids.slice(0,-1);
+                        value_names = value_names.slice(0, -1);
+                    }
+                    html += '<td><input class="item_price layui-input" name="item['+value_ids+'][price]" value="0"><input type="hidden" name="item['+value_ids+'][value_names]" value="'+value_names+'"><input type="hidden" name="item['+value_ids+'][value_ids]" value="'+value_ids+'"></td>';
+                    html += '<td><input class="item_store_count layui-input" name="item['+value_ids+'][store_count]" value="0"></td>';
+                    html += '<td><button type="button" class="layui-btn layui-btn-primary layui-btn-sm delete_item ">移除</button></td>';
+                    html += '</tr>';
+                });
+                $('#spec_input_tab').find('tbody').html(html);
+            });
+
+            // SKU批量填充按钮点击事件
+            $('#spec_input_tab').on('click', '#item_fill', function () {
+                var item_price = $('#item_price').val();
+                var item_store_count = $('#item_store_count').val();
+                $('.item_price').val(item_price);
+                $('.item_store_count').val(item_store_count);
+            });
+            // SKU移除一行事件
+            $('#spec_input_tab').on('click', '.delete_item', function () {
+                $(this).closest('tr').remove();
+            });
+        });
 
         // 商品分类 无限极分类
         var catIns1 = selectN({
@@ -314,7 +478,7 @@
             }
         });
 
-        // 监听通用信息表单提交
+        // 监听表单提交
         form.on('submit(general)', function (data) {
             var postData = data.field;
             // 商品分类  无限极分类 最后一个选中值id
@@ -378,17 +542,22 @@
                         attrs_html += '<tr class="attr_name" attr_id="' + v.id + '">';
                         attrs_html += '<td attr_name="' + v.name + '">' + v.name + '</td>';
                         attrs_html += '<td><input type="hidden" name="attr[' +v.id+'][attr_name]" value="'+v.name+'"><input type="hidden" name="attr['+v.id+'][id]" value="'+v.id+'">';
-                        attrs_html += '<select name="attr['+v.id+'][attr_value]" class="">';
-                        attrs_html += '<option value="">请选择</option>';
-                        // 还没完成，待续
-                        attrs_html += '<option value="'+v.value+'">'+ +'</option>';
-                        attrs_html += '</select>';
-                        attrs_html += '<input type="text" name="attr['+v.id+'][attr_value]" value="'+v.value+'" class="layui-input">';
+                        if (v.values.length == 0) {
+                            attrs_html += '<input type="text" name="attr['+v.id+'][attr_value]" value="" class="layui-input">';
+                        } else {
+                            attrs_html += '<select name="attr['+v.id+'][attr_value]"><option value="">请选择</option>';
+                            $.each(v.values, function (index, val) {
+                                attrs_html += '<option value="'+val+'">'+val+'</option>';
+                            });
+                            attrs_html += '</select>';
+                        }
                         attrs_html += '</td>';
                         attrs_html += '</tr>';
                     });
                     // 将拼接好的html字符串，放到页面显示
                     $('#goods_attr_table').find('tbody').html(attrs_html);
+                    // 更新渲染下拉框
+                    form.render('select');
                 } else if (res.code == 302) {
                     location.href = '/admin/error/' + res.msg;
                 } else {

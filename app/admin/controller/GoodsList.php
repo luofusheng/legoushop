@@ -153,7 +153,9 @@ class GoodsList extends Base
     // 商品列表添加页面通用信息保存接口
     public function save()
     {
-        // 接收表单数据
+        halt();
+
+        // 接收通用信息数据
         $params['logo'] = trim(input('post.logo', '', 'strip_tags'));
         $params['name'] = trim(input('post.name', '', 'strip_tags'));
         $params['keywords'] = trim(input('post.keywords', '', 'strip_tags'));
@@ -165,7 +167,30 @@ class GoodsList extends Base
         $params['stock'] = trim(input('post.stock', '', 'strip_tags'));
         $params['category'] = trim(input('post.category', '', 'strip_tags'));
         $params['detail'] = trim(input('post.detail'));
+        // 接收商品相册图片
         $params['gallery'] = trim(input('post.goods_gallery', '', 'strip_tags'));
+        // 接收商品模型数据，格式为：
+        /*
+         * 规格值，其中的55-58表示规格id的组合
+        item[55_58][price]: 4999
+        item[55_58][value_names]: 颜色:红色 内存:4+64
+        item[55_58][value_ids]: 55_58
+        item[55_58][store_count]: 999
+        item[55_59][price]: 4999
+        item[55_59][value_names]: 颜色:红色 内存:4+128
+        item[55_59][value_ids]: 55_59
+        item[55_59][store_count]: 999
+
+        属性值：
+        attr[21][attr_name]: 重量
+        attr[21][id]: 21
+        attr[21][attr_value]: 200g
+        attr[22][attr_name]: 版本
+        attr[22][id]: 22
+        attr[22][attr_value]: 国行
+        */
+        $params['sku'] = input('post.item', '', 'strip_tags');
+        $params['attr'] = input('post.attr', '', 'strip_tags');
 
         // 表单数据验证
         $validate = Validate::rule([
@@ -184,7 +209,7 @@ class GoodsList extends Base
             ]);
         }
 
-        // logo图片位置迁移
+        // logo图片位置迁移，然后生成缩略图
         if (!empty($params['logo'])) {
             // 将图片从临时temp文件夹中迁移到goods_list/logo文件夹中
             // 传过来的临时文件路径为：/uploads/image/temp/20201030/d885cc3b24b184a7c631408b5e0f670e.jpg
@@ -201,10 +226,15 @@ class GoodsList extends Base
             rename($tempImg, $newImg);
             // 修改图片路径为新路径
             $params['logo'] = ltrim($newImg, '.');
+
+            // 生成缩略图
         }
 
         // 处理富文本编辑器传来的文本内容
         $newContent = $this->processContent($params['detail']);
+
+        // 商品相册处理
+
 
         // 将数据存入数据库
         Db::startTrans();
@@ -256,6 +286,12 @@ class GoodsList extends Base
         $type_id = (int)input('post.type_id', '', 'strip_tags');
 
         $type = \app\admin\model\GoodsType::with(['goodsSpecName.goodsSpecValue', 'goodsAttr'])->find($type_id);
+        //  将商品属性值字符串分割成一个数组，数组里面包含所有的属性值
+        foreach ($type['goodsAttr'] as &$v) {
+            $v['values'] = explode(',', $v['values']);
+        }
+        unset($v);
+
         $data['goodsAttr'] = $type['goodsAttr'];
         $data['goodsSpecName'] = $type['goodsSpecName'];
         return json([
