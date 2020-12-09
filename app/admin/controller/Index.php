@@ -50,7 +50,7 @@ class Index extends BaseController
             'href'  => '/admin/home/',
         ];
         $logoInfo = [
-            'title' => '乐购商城',
+            'title' => '品优购后台',
             'image' => '/static/admin/images/logo.png',
             'href' => '/admin/'
         ];

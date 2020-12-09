@@ -119,14 +119,14 @@
                         , data = checkStatus.data;
                     var length = data.length;
                     if (length<1) {
-                        layer.msg('请选择品牌');
+                        layer.msg('请选择商品');
                         return;
                     }
                     var ids = [];
                     data.forEach(function (currentValue) {
                         ids.push(currentValue.id)
                     });
-                    $.post('/admin/brand/delete-multi', {ids: ids}, function (res) {
+                    $.post('/admin/goods_list/delete-multi', {ids: ids}, function (res) {
                         if (res.code == 0) {
                             layer.msg(res.msg, {icon: 1});
                             //执行重载
@@ -157,13 +157,13 @@
             var data = obj.data;
             if (obj.event === 'edit') {
                 var index = layer.open({
-                    title: '修改品牌',
+                    title: '修改商品',
                     type: 2,
                     shade: 0.2,
                     maxmin:true,
                     shadeClose: true,
                     area: ['100%', '100%'],
-                    content: '/admin/brand/edit?id='+data.id,
+                    content: '/admin/goods_list/edit?id='+data.id,
                 });
                 $(window).on("resize", function () {
                     layer.full(index);
@@ -173,7 +173,7 @@
                 layer.confirm('确定删除吗？', {icon:3, title:'操作确认'}, function (index) {
                     layer.close(index);
                     // 向服务端发送删除指令
-                    $.post('/admin/brand/delete', {id:data.id}, function (res) {
+                    $.post('/admin/goods_list/delete', {id:data.id}, function (res) {
                         if (res.code == 0) {
                             obj.del();
                             layer.msg(res.msg, {icon: 1});

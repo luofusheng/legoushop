@@ -156,9 +156,19 @@ Route::group('goods_list', function () {
     // 详情描述富文本编辑器图片上传接口
     Route::post('upload_img', 'GoodsList/uploadImg');
     // 商品列表添加页面保存接口
-    Route::post('save', 'GoodsList/save');
+    Route::post('save', 'GoodsList/save')->token();
     // 商品列表相册图片上传接口
     Route::post('upload_gallery', 'GoodsList/uploadGallery');
     // 获取选中的模型规格属性数据接口
     Route::post('get_spec_attr', 'GoodsList/getSpecAttr');
+    // 商品列表修改页面
+    Route::get('edit', 'GoodsList/edit');
+    // 商品修改页面商品相册删除一张图片
+    Route::post('del_img', 'GoodsList/delImg');
+    // 商品修改页面保存接口
+    Route::post('update', 'GoodsList/update')->token();
+    // 商品列表删除
+    Route::post('delete', 'GoodsList/delete');
+    // 商品列表多选删除接口
+    Route::post('delete-multi', 'GoodsList/deleteMulti');
 });

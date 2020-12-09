@@ -6,6 +6,7 @@ namespace app\admin\controller;
 use app\admin\model\GoodsAttr;
 use app\admin\model\GoodsSpecName;
 use app\admin\model\GoodsSpecValue;
+use app\admin\model\GoodsSpu;
 use think\facade\Db;
 
 class GoodsType extends Base
@@ -278,6 +279,15 @@ class GoodsType extends Base
     {
         $id = (int)trim(input('post.id', '', 'strip_tags'));
 
+        // 先查询有没有商品使用该模型
+        $goodsSpu = GoodsSpu::where('goods_type_id', $id)->find();
+        if (!empty($goodsSpu)) {    // 如果有商品使用该模型
+            return json([
+                'code' => 2,
+                'msg' => $goodsSpu->name . '在使用该模型，无法删除'
+            ]);
+        }
+
         Db::startTrans();
         try {
             \app\admin\model\GoodsType::destroy($id);
@@ -307,6 +317,19 @@ class GoodsType extends Base
     public function deleteMulti()
     {
         $ids = input('post.ids', '', 'strip_tags');
+
+        // 先查询有没有商品使用该模型
+        $goodsSpu = GoodsSpu::where('goods_type_id', 'in', $ids)->select();
+        if (!$goodsSpu->isEmpty()) {    // 如果有商品使用该模型
+            $msg = '';
+            foreach ($goodsSpu as $v) {
+                $msg .= $v->name . ',';
+            }
+            return json([
+                'code' => 2,
+                'msg' => $msg . '在使用该模型，无法删除'
+            ]);
+        }
 
         Db::startTrans();
         try {

@@ -19,4 +19,25 @@ class GoodsSpu extends Model
                 'category_pid_pathname' => 'pid_path_name'
             ]);
     }
+
+    // 关联商品详情
+    public function goodsDetail()
+    {
+        return $this->hasOne(GoodsDetail::class);
+    }
+    // 关联相册图片
+    public function goodsImages()
+    {
+        return $this->hasMany(GoodsImages::class);
+    }
+    // 关联SKU
+    public function goodsSku()
+    {
+        return $this->hasMany(GoodsSku::class);
+    }
+    // 关联商品模型 相对关联
+    public function goodsType()
+    {
+        return $this->belongsTo(GoodsType::class);
+    }
 }
