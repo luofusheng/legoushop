@@ -1,0 +1,53 @@
+
+<!-- 引入list列表页的css 文件 -->
+<link rel="stylesheet" href="/static/home/css/list.css">
+<!-- 引入layui -->
+<link rel="stylesheet" href="/static/home/js/plugins/layui/css/layui.css">
+<script src="/static/home/js/plugins/layui/layui.js"></script>
+
+
+<!-- 主体内容 start -->
+<!-- 面包屑导航 -->
+<div class="wrap crumb">
+    首页<span class="iconfont icon-youjiantou"></span>{if is_array($crumb) }
+    {$crumb[0]}<span class="iconfont icon-youjiantou"></span>{$crumb[1]}
+    {else /}{$crumb}{/if}
+</div>
+<!-- 商品列表 -->
+<div class="wrap list">
+    {foreach $goodsList as $v}
+    <div class="item">
+        <a href="/home/goods_detail?id={$v.id}">
+            <img src="{$v.goods_logo}" alt="">
+            <h3>{$v.name}</h3>
+            <p>￥{$v.price}</p>
+        </a>
+    </div>
+    {/foreach}
+
+</div>
+<!-- 分页 -->
+<div class="wrap">
+    <div class="page">
+        <div id="page"></div>
+    </div>
+</div>
+
+<script>
+    layui.use('laypage', function () {
+        var laypage = layui.laypage;
+
+        laypage.render({
+            elem: 'page',
+            count: {$count},
+            limit: 10,
+            theme: '#b1191a',
+            jump: function (obj, first) {
+                //首次不执行
+                if(!first){
+                    window.location.href='/home/list?page='+obj.curr+'limit='+obj.limit+'id='+{$id};
+                }
+            }
+        });
+    });
+</script>

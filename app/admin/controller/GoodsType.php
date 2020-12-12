@@ -182,11 +182,6 @@ class GoodsType extends Base
 
         // 查询得到商品模型所有数据
         $goodsType = \app\admin\model\GoodsType::with(['goodsSpecName.goodsSpecValue', 'goodsAttr'])->find($id)->toArray();
-        // 将商品属性值字符串分割成一个数组，数组里面包含所有的属性值
-        foreach ($goodsType['goodsAttr'] as &$v) {
-            $v['values'] = explode(',', $v['values']);
-        }
-        unset($v);
 
         return view('', [
             'goodsTypeData' => $goodsType

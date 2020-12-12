@@ -1,0 +1,234 @@
+
+<!-- 引入layui -->
+<link rel="stylesheet" href="/static/home/js/plugins/layui/css/layui.css">
+<script src="/static/home/js/plugins/layui/layui.js"></script>
+<!-- 引入详情页的css 文件 -->
+<link rel="stylesheet" href="/static/home/css/detail.css">
+
+
+<!-- 主体内容 start -->
+<div class="detail wrap">
+    <!-- 面包屑导肮 -->
+    <div class="crumb">
+        首页<span class="iconfont icon-youjiantou"></span>
+        {$goodsInfo.category_pid_pathname}<span class="iconfont icon-youjiantou"></span>
+        {$goodsInfo.category_name}<span class="iconfont icon-youjiantou"></span>
+        {$goodsInfo.name}
+    </div>
+    <!-- 产品介绍 -->
+    <div class="product_intro clearfix">
+        <!-- 预览区域 -->
+        <div class="preview fl">
+            <div class="preview_img" id="zoom">
+                <img src="{$goodsInfo['goodsImages'][0]['image_small']}" bimg="{$goodsInfo['goodsImages'][0]['image_big']}" height="398px">
+            </div>
+            <div class="preview_list">
+                <a href="javascript:;" class="arrow_prev"></a>
+                <div class="list_item">
+                    <ul>
+                        {foreach $goodsInfo.goodsImages as $v}
+                        <li>
+                            <img src="{$v.image_small}" bimg="{$v.image_big}" width="56px">
+                        </li>
+                        {/foreach}
+                    </ul>
+                </div>
+                <a href="javascript:;" class="arrow_next"></a>
+            </div>
+        </div>
+        <!-- 产品详细信息 -->
+        <div class="item_info fr">
+            <div class="sku_name">
+                {$goodsInfo.name}
+            </div>
+            <div class="summary">
+                <dl class="summary_price">
+                    <dt>价格</dt>
+                    <dd>
+                        <i class="price">￥{$goodsInfo.price}</i>
+                    </dd>
+                </dl>
+                {foreach $specs as $v}
+                <dl class="spec">
+                    <dt>{$v.spec_name}</dt>
+                    <dd>
+                        {foreach $v['spec_values'] as $k=>$value}
+                        <a spec_value_id="{$value.id}" href="javascript:;" class="{if($k == 0)}current{/if}">{$value.value}</a>
+                        {/foreach}
+                    </dd>
+                </dl>
+                {/foreach}
+            </div>
+            <div class="choose_btns">
+                <div class="choose_amount">
+                    <input id="number" type="text" value="1">
+                    <a href="javascript:;" class="add">+</a>
+                    <a href="javascript:;" class="reduce">-</a>
+                </div>
+                <a href="javascript:;" id="add_shop_car" class="addcar">加入购物车</a>
+            </div>
+        </div>
+    </div>
+    <!-- 产品细节 -->
+    <div class="product_detail">
+        <div class="detail_tab_list">
+            <ul>
+                <li class="current">商品介绍</li>
+                <li>商品属性</li>
+            </ul>
+        </div>
+        <div class="detail_tab_con">
+            <div class="item" style="display: block;">
+                {:htmlspecialchars_decode($goodsInfo['goodsDetail']['content'])}
+            </div>
+            <div class="item">
+                {foreach $goodsInfo['goods_attr'] as $v}
+                <li>{$v.attr_name}: {$v.attr_value}</li>
+                {/foreach}
+            </div>
+        </div>
+    </div>
+</div>
+<!--购物车表单-->
+<form action="/home/add_cart" method="post" style="display: none">
+    <input type="hidden" name="goods_id" value="{$goodsInfo.id}">
+    <input type="hidden" name="sku_id" value="">
+    <input type="hidden" name="number" value="">
+</form>
+<!-- 主体内容 end -->
+
+<script src="/static/home/js/jquery.min.js"></script>
+<script src="/static/home/js/plugins/jquery.zoom.min.js"></script>
+<script>
+    $(function() {
+        // 规格值ids 到 规格商品id的映射关系
+        var valueIdsMap = {:htmlspecialchars_decode($valueIdsMap)};
+
+        // 商品相册图片预览放大
+        $('#zoom').zoom({
+            url: $('#zoom img').attr('bimg'),
+        });
+
+        // 商品相册图片预览小图鼠标悬浮事件绑定
+        $('.preview_list .list_item li').on('mouseover', function () {
+            $(this).addClass('current').siblings('li').removeClass('current');
+            var img = $(this).find('img').attr('src');
+            var bimg = $(this).find('img').attr('bimg');
+            $(this).closest('.preview').find('.preview_img img').attr('src', img);
+            $(this).closest('.preview').find('.preview_img img').attr('bimg', bimg);
+
+            // 商品相册图片预览放大
+            $('#zoom').zoom({
+                url: $('#zoom img').attr('bimg'),
+            });
+        });
+
+        // 规格值选中效果
+        $('.spec').find('a').click(function () {
+            // 给当前行标签 移除current这个class
+            $(this).siblings().removeClass('current');
+            // 再给当前点击的a标签加上current类
+            $(this).addClass('current');
+
+            // 获取选中的规格值的组合
+            var valueIds = '';
+            $('.spec .current').each(function (i,v) {
+                valueIds += $(v).attr('spec_value_id') + '_';
+            });
+            // 去除最后一个下划线 valueIds = '19_21_' 转换成valueIds = '19_21'
+            valueIds = valueIds.slice(0, -1);
+            // 获取对应的商品SKU的id值
+            var specGoodsPrice = valueIdsMap[valueIds].price;
+            // 将价格显示到页面
+            $('.price').html('￥'+specGoodsPrice);
+        });
+
+        // 加号
+        $('.add').click(function () {
+            // 获取数量
+            let number = parseInt($('#number').val());
+            // 计算新的数量
+            number += 1;
+            // 展示新的数量
+            $('#number').val(number);
+        });
+
+        // 减号
+        $('.reduce').click(function () {
+            // 获取数量
+            let number = parseInt($('#number').val());
+            // 计算新的数量
+            if (number == 1) return;
+            number -= 1;
+            // 展示新的数量
+            $('#number').val(number);
+        });
+
+        // 加入购物车
+        $('#add_shop_car').click(function () {
+            // 获取选中的规格值的组合
+            var valueIds = '';
+            $('.spec .current').each(function (i,v) {
+                valueIds += $(v).attr('spec_value_id') + '_';
+            });
+            // 去除最后一个下划线
+            valueIds = valueIds.slice(0, -1);
+            // 获取对应的商品SKU的id值，考虑到部分商品可能没有SKU，需要使用三元判断
+            var skuId = valueIdsMap[valueIds] ? valueIdsMap[valueIds].id: '';
+            // 将skuId放到隐藏表单中
+            $('input[name=sku_id]').val(skuId);
+            // 获取购买数量
+            var number = $('#number').val();
+            // 将购买数量放到隐藏表单中
+            $('input[name=number]').val(number);
+            // 提交表单
+            $('form').submit();
+        });
+
+        // 商品详情选项卡切换
+        // 1. 点击上部的li，当前li添加current类，其余兄弟移除类
+        $('.detail_tab_list li').click(function() {
+            // 链式编程操作
+            $(this).addClass('current').siblings().removeClass('current');
+            // 2. 点击的同时，得到当前li的索引号
+            var index = $(this).index();
+            // 3. 让下部里面相应索引号的item显示，其余的item隐藏
+            $('.detail_tab_con .item').eq(index).show().siblings().hide();
+        });
+
+        //图片预览小图移动效果,页面加载时触发
+        var tempLength = 0; //临时变量,当前移动的长度
+        var viewNum = 4; //设置每次显示图片的个数量
+        var moveNum = 2; //每次移动的数量
+        var moveTime = 300; //移动速度,毫秒
+        var scrollDiv = $(".preview_list .list_item ul"); //进行移动动画的容器
+        var scrollItems = $(".preview_list .list_item ul li"); //移动容器里的集合
+        var moveLength = scrollItems.eq(0).width() * moveNum; //计算每次移动的长度
+        var countLength = (scrollItems.length - viewNum) * scrollItems.eq(0).width(); //计算总长度,总个数*单个长度
+
+        //下一张
+        $(".preview_list .arrow_next").on("click",function(){
+            if(tempLength < countLength){
+                if((countLength - tempLength) > moveLength){
+                    scrollDiv.animate({left:"-=" + moveLength + "px"}, moveTime);
+                    tempLength += moveLength;
+                }else{
+                    scrollDiv.animate({left:"-=" + (countLength - tempLength) + "px"}, moveTime);
+                    tempLength += (countLength - tempLength);
+                }
+            }
+        });
+        //上一张
+        $(".preview_list .arrow_prev").on("click",function(){
+            if(tempLength > 0){
+                if(tempLength > moveLength){
+                    scrollDiv.animate({left: "+=" + moveLength + "px"}, moveTime);
+                    tempLength -= moveLength;
+                }else{
+                    scrollDiv.animate({left: "+=" + tempLength + "px"}, moveTime);
+                    tempLength = 0;
+                }
+            }
+        });
+    });
+</script>
