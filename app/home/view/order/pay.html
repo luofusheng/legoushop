@@ -1,0 +1,70 @@
+    <link rel="stylesheet" href="/static/home/css/pay.css">
+
+<!-- 主体内容 start -->
+<div class="order wrap">
+    <div class="head">
+        <h4>
+            订单提交成功，请您及时付款，一遍尽快为您发货~~
+        </h4>
+        <div class="paymark clearfix">
+                <span class="fl">
+                    请您在提交订单
+                    <em class="time">30分钟</em>
+                    之内完成支付，超时订单会自动取消。订单号：{$orderSn}
+                </span>
+            <span class="right fr">
+                    应付金额：
+                    <em class="money">￥{$totalPrice}</em>
+                </span>
+        </div>
+    </div>
+    <div class="prompt">
+        商城目前处于测试阶段，仅支持支付宝支付<br>
+        支付宝账户信息：<br>
+        支付宝账号：ygjxao8809@sandbox.com<br>
+        登录密码：111111<br>
+        支付密码：111111<br>
+    </div>
+    <div class="step">
+        <div class="platform">
+            <h5 class="title">支付平台</h5>
+            <div class="detail clearfix">
+                {foreach $payType as $k=>$v}
+                <div pay_code="{$v.pay_code}" class="item fl {if ($k == 'alipay') }selected{/if}">
+                    <img src="{$v.logo}" alt="">
+                </div>
+                {/foreach}
+            </div>
+        </div>
+        <div class="submit">
+            <a href="javascript:;">立即支付</a>
+        </div>
+    </div>
+
+</div>
+
+    <form id="payForm" action="/home/order/pay" method="post" style="display: none;">
+        <input type="hidden" name="order_sn" value="{$orderSn}">
+        <input type="hidden" name="pay_code" value="">
+    </form>
+<!-- 主体内容 end -->
+
+<script src="/static/home/js/jquery.min.js"></script>
+<script>
+    $(function () {
+        // 支付平台选择事件
+        $('.platform>.detail>.item').click(function () {
+            $(this).addClass('selected').siblings().removeClass('selected');
+        });
+        
+        // 去支付
+        $('.submit>a').click(function () {
+            // 获取选择的支付方式
+            let payCode = $('.platform>.detail>.selected').attr('pay_code');
+            // 将支付方式payCode放到表单中
+            $('#payForm>input[name=pay_code]').val(payCode);
+            // 发送请求，提交表单
+            $('#payForm').submit();
+        });
+    });
+</script>

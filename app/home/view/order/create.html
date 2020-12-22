@@ -1,0 +1,249 @@
+ <!-- 引入创建订单页页的css 文件 -->
+    <link rel="stylesheet" href="/static/home/css/createOrder.css">
+    <!-- 引入layui -->
+    <link rel="stylesheet" href="/static/home/js/plugins/layui/css/layui.css">
+    <script src="/static/home/js/plugins/layui/layui.js"></script>
+
+<!-- 主体内容 start -->
+<div class="create_order wrap">
+    <div class="title">
+        填写并核对订单信息
+    </div>
+    <div class="content">
+        <div class="consignee">
+            <div class="title clearfix">
+                <div class="left fl">
+                    收件人信息
+                </div>
+                <div class="right fr">
+                    <a href="javascript:;" class="add_address">新增收货地址</a>
+                </div>
+            </div>
+            <div class="detail">
+                {foreach $address as $v}
+                <div class="address_item clearfix">
+                    <a href="javascript:;" class="fl cnee {if ($v.is_default == 1)}choose{/if}" address_id="{$v.id}">{$v.consignee}</a>
+                    <span class="detail_address fl">{$v.consignee} {$v.province}{$v.city}{$v.county} {$v.address} {$v.phone}</span>
+                    {if ($v.is_default == 1)}
+                    <span class="default_address fl">默认地址</span>
+                    {/if}
+                    <div class="hidden fl">
+                        <a href="javascript:;" class="edit_address" address_id="{$v.id}">编辑</a>
+                        <a href="javascript:;" class="del_address" address_id="{$v.id}">删除</a>
+                    </div>
+                </div>
+                {/foreach}
+            </div>
+        </div>
+        <div class="goods_list">
+            <div class="title">商品清单</div>
+            <div class="detail">
+                {foreach $cartData as $v}
+                <div class="goods_item clearfix">
+                    <img class="fl" src="{$v.goods_logo}" alt="">
+                    <div class="name fl">
+                        <div class="spu">{$v.spu_name}</div>
+                        <div class="sku">{$v.spec_name_values}</div>
+                    </div>
+                    <div class="price fl">{$v.spu_price}</div>
+                    <div class="number fl">x{$v.number}</div>
+                    <div class="stock fl">{if ($v.spu_stock > 0)}有货{else /}无货{/if}</div>
+                </div>
+                {/foreach}
+            </div>
+        </div>
+    </div>
+    <div class="total">
+        <div>
+            <span class="number">{$totalNumber}</span>件商品，总商品金额：<span class="price">￥{$totalPrice}</span>
+        </div>
+        <div>
+            应付金额：<span class="price">￥{$totalPrice}</span>
+        </div>
+        <div>
+            寄送至：
+            {foreach $address as $v}
+            <span class="send_to">
+                {if ($v.is_default == 1)}{$v.consignee} {$v.province}{$v.city}{$v.county} {$v.address} {$v.phone}{/if}
+            </span>
+            {/foreach}
+        </div>
+    </div>
+    <div class="submit clearfix">
+        <a href="javascript:;">提交订单</a>
+    </div>
+</div>
+<!-- 主体内容 end -->
+
+<!-- 新增收货地址 -->
+<div id="add_address_page" style="display: none;">
+    <form class="layui-form" style="padding: 10px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">收货人</label>
+            <div class="layui-input-block">
+                <input type="text" name="consignee"  lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item" id="area-picker">
+            <div class="layui-form-label">网点地址</div>
+            <div class="layui-input-inline">
+                <select name="province" class="province-selector" data-value="广东省" lay-filter="province-1">
+                    <option value="">请选择省</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="city" class="city-selector" data-value="深圳市" lay-filter="city-1">
+                    <option value="">请选择市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="county" class="county-selector" data-value="龙岗区" lay-filter="county-1">
+                    <option value="">请选择区</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">详细地址</label>
+            <div class="layui-input-block">
+                <input type="text" name="address"  lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">联系电话</label>
+            <div class="layui-input-block">
+                <input type="text" name="phone"   lay-verify="required" autocomplete="off" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="add_address">保存</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+</div>
+<!-- 订单信息表单-->
+<form id="orderForm" action="/home/order/save" method="post" style="display: none">
+ <input type="hidden" name="address_id" value="">
+</form>
+<script>
+    //配置插件目录
+    layui.config({
+        base: '/static/home/js/plugins/layui/mods/'
+        , version: '1.0'
+    });
+
+    layui.use(['form', 'layer', 'layarea'], function() {
+        var form = layui.form;
+        var layer = layui.layer;
+        var layarea = layui.layarea;
+        var $ = layui.jquery;
+
+        $(function() {
+            // 选择收件人信息
+            $('.cnee').click(function () {
+                $(this).addClass('choose');
+                let consignee = $(this).closest('.address_item').siblings().find('.cnee');
+                consignee.each(function (i,v) {
+                    $(v).removeClass('choose');
+                });
+
+                // 填充 寄送至 信息
+                let content = $(this).next('.detail_address').html();
+                $('.send_to').html(content);
+            });
+
+            // 新增收货地址
+            $('.add_address').click(function() {
+                var index = layer.open({
+                    type: 1,
+                    title: '新增收货地址',
+                    skin: 'layui-layer-rim', //加上边框
+                    area: ['800px', '440px'], //宽高
+                    content: $('#add_address_page')
+                });
+            });
+
+            // 编辑收货地址
+            $('.edit_address').click(function () {
+                let id = $(this).attr('address_id');
+                layer.open({
+                    type: 2,
+                    content: '/home/address/edit?id='+id,
+                    title: '修改收货地址',
+                    skin: 'layui-layer-rim', //加上边框
+                    area: ['800px', '440px'], //宽高
+                });
+            });
+
+            // 删除收货地址
+            $('.del_address').click(function () {
+                let that = $(this);
+                layer.confirm('确定删除该收货地址吗?', {icon: 3, title:'提示'}, function(index){
+                    that.closest('.address_item').remove();
+                    // 后端数据修改
+                    let id = that.attr('address_id');
+                    $.post('/home/address/del_address', {id:id}, function (res) {
+                        if (res.code == 0) {
+                            layer.msg('删除成功');
+                        } else {
+                            layer.msg('删除失败');
+                        }
+                    }, 'json');
+
+                    layer.close(index);
+                });
+            });
+
+            // 提交订单
+            $('.submit>a').click(function () {
+                // 获取选中的收货地址的id
+                let addressId = $('.address_item').find('.cnee.choose').attr('address_id');
+                if (addressId == undefined) {
+                    layer.msg('请选择收货地址');
+                    return;
+                }
+                // 将地址id放入表单中
+                $('#orderForm>input[name=address_id]').val(addressId);
+                // 提交表单
+                $('#orderForm').submit();
+            });
+
+        });
+
+        // 渲染省市县三级选择框
+        layarea.render({
+            elem: '#area-picker',
+            change: function (res) {
+                console.log(res);
+            }
+        });
+
+        // 新增收货地址表单提交
+        form.on('submit(add_address)', function (data) {
+            // 获取当前弹窗索引
+            var parentIndex = layer.index;
+            $.post('/home/address/save', data.field, function (res) {
+                if (res.code > 0) { // 添加失败
+                    layer.msg(res.msg, {icon: 2});
+                } else {    // 添加成功
+                    layer.msg(res.msg, {
+                        icon:1,
+                        time: 1000
+                    }, function () {
+                        // 清空表单
+                        $('#add_address_page>form')[0].reset();
+                        form.render();
+                        // 关闭弹窗
+                        layer.close(parentIndex);
+                        // 重新刷新页面
+                        parent.location.reload();
+                    });
+                }
+            }, 'json');
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

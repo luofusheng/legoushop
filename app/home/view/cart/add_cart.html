@@ -1,0 +1,28 @@
+
+    <!-- 引入商品详情页的css 文件 -->
+    <link rel="stylesheet" href="/static/home/css/addcart.css">
+
+<!-- 主体内容 start -->
+<div class="add_cart wrap">
+    <h3 class="title">
+        商品已成功加入购物车
+    </h3>
+    <div class="body clearfix">
+        <div class="content fl clearfix">
+            <img class="fl" src="{$goodsSpu.goods_logo}" alt="">
+            <div class="detail fl">
+                <div class="goods_name">
+                    {$goodsSpu.name}
+                </div>
+                <div class="goods_detail">
+                    {$goodsSku.spec_name_values} 数量：{$number}
+                </div>
+            </div>
+        </div>
+        <div class="goto fr">
+            <a href="/home/goods_detail?id={$goodsSpu.id}" class="for_detail">查看商品详情</a>
+            <a href="/home/cart_list" class="for_clear">去购物车结算<span class="iconfont icon-youjiantou"></span></a>
+        </div>
+    </div>
+</div>
+<!-- 主体内容 end -->

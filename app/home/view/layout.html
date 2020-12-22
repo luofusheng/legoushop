@@ -22,17 +22,24 @@
         <div class="fl">
             <ul>
                 <li>品优购欢迎您！</li>
-                <li>
-                    <a href="#">请登录</a>
-                    <a href="#" class="style_red">免费注册</a>
+                {if ($Request.session.user_info == '')}
+                <li>请
+                    <a href="/home/login" class="style_red">登录</a>
+                    <a href="/home/register" class="style_red">免费注册</a>
                 </li>
+                {else /}
+                <li>Hi,
+                    <a href="javascript:;">{if ($Request.session.user_info.nickname)}{$Request.session.user_info.nickname}{else /}{$Request.session.user_info.username}{/if}</a>
+                    <a href="/home/logout" class="style_red">退出</a>
+                </li>
+                {/if}
             </ul>
         </div>
         <div class="fr">
             <ul>
                 <li><a href="#">我的订单</a></li>
                 <li class="spacer"></li>
-                <li><a href="#">个人中心</a></li>
+                <li><a href="/home/personal_center">个人中心</a></li>
             </ul>
         </div>
     </div>
@@ -54,8 +61,10 @@
     </div>
     <!-- 购物车 -->
     <div class="shopping_cart">
-        <span class="iconfont icon-gouwuche"></span>我的购物车<span class="iconfont icon-youjiantou"></span>
-        <i class="count">80</i>
+        <a href="/home/cart_list">
+            <span class="iconfont icon-gouwuche"></span>我的购物车<span class="iconfont icon-youjiantou"></span>
+            <i class="count">{$cartNumber}</i>
+        </a>
     </div>
 </div>
 <!-- 头部end -->

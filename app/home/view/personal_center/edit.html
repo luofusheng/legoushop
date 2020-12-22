@@ -1,0 +1,112 @@
+{__NOLAYOUT__}
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- 引入layui -->
+    <link rel="stylesheet" href="/static/home/js/plugins/layui/css/layui.css">
+    <script src="/static/home/js/plugins/layui/layui.js"></script>
+    <title></title>
+    <style>
+        body {
+            padding: 10px;
+        }
+
+    </style>
+</head>
+<body>
+    <form class="layui-form">
+        <input type="hidden" name="id" value="{$address.id}">
+        <div class="layui-form-item">
+            <label class="layui-form-label">收货人</label>
+            <div class="layui-input-block">
+                <input type="text" name="consignee"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$address.consignee}">
+            </div>
+        </div>
+        <div class="layui-form-item" id="area-picker2">
+            <div class="layui-form-label">网点地址</div>
+            <div class="layui-input-inline">
+                <select name="province" class="province-selector" data-value="广东省" lay-filter="province-1">
+                    <option value="">请选择省</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="city" class="city-selector" data-value="深圳市" lay-filter="city-1">
+                    <option value="">请选择市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="county" class="county-selector" data-value="龙岗区" lay-filter="county-1">
+                    <option value="">请选择区</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">详细地址</label>
+            <div class="layui-input-block">
+                <input type="text" name="address"  lay-verify="required" autocomplete="off" class="layui-input" value="{$address.address}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">联系电话</label>
+            <div class="layui-input-block">
+                <input type="text" name="phone" lay-verify="required" autocomplete="off" class="layui-input" value="{$address.phone}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn" lay-submit lay-filter="edit_address">保存</button>
+                <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+            </div>
+        </div>
+    </form>
+
+
+    <script>
+        // 配置插件目录
+        layui.config({
+            base: '/static/home/js/plugins/layui/mods/',
+            version: '1.0'
+        });
+
+        layui.use(['form', 'layarea', 'layer'], function () {
+            var form = layui.form;
+            var layer = layui.layer;
+            var layarea = layui.layarea;
+            var $ = layui.jquery;
+
+            // 省市区三级下拉框
+            layarea.render({
+                elem: '#area-picker2',
+                change: function (res) {
+                    
+                }
+            });
+
+            // 修改收货地址表单提交
+            form.on('submit(edit_address)', function (data) {
+                var current_index = parent.layer.getFrameIndex(window.name); //先得到当前iframe层的索引
+                $.post('/home/address/update', data.field, function (res) {
+                    if (res.code > 0) { // 修改失败
+                        layer.msg(res.msg, {icon: 2});
+                    } else {
+                        layer.msg(res.msg, {
+                            icon: 1,
+                            time: 1000
+                        }, function () {
+                            // 关闭弹窗
+                            parent.layer.close(current_index);
+                            // 重新刷新页面
+                            parent.location.reload();
+                        });
+                    }
+                }, 'json');
+                return false;
+            });
+        });
+    </script>
+</body>
+</html>

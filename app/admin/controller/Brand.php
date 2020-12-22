@@ -158,6 +158,11 @@ class Brand extends Base
         $brand = GoodsBrand::find($params['id'])->toArray();
         if ($brand['logo'] != $params['logo']) {   // 如果品牌图片被改动了
             if (!empty($params['logo'])) {
+                // 先删除原来的图片
+                if (!empty($brand['logo'])) {
+                    unlink('.' . $brand['logo']);
+                }
+
                 // 将图片从临时temp文件夹中迁移到brand文件夹中
                 // 传过来的临时文件路径为：/uploads/image/temp/20201030/d885cc3b24b184a7c631408b5e0f670e.jpg
                 // 要迁移的文件路径：/uploads/image/goods_category/20201030/d885cc3b24b184a7c631408b5e0f670e.jpg

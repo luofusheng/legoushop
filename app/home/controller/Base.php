@@ -4,6 +4,7 @@ declare (strict_types = 1);
 namespace app\home\controller;
 
 use app\BaseController;
+use app\home\logic\CartLogic;
 use app\home\model\GoodsCategory;
 use think\facade\View;
 
@@ -18,7 +19,15 @@ class Base extends BaseController
             $goodsCategory = get_tree_list($goodsCategory->toArray());
         }
 
+        // 计算购物车商品数量
+        $cart = CartLogic::getAllCart();
+        $cartNumber = 0;
+        foreach ($cart as $v) {
+            $cartNumber += $v['number'];
+        }
+
         // 变量赋值
         View::assign('goodsCategory', $goodsCategory);
+        View::assign('cartNumber', $cartNumber);
     }
 }

@@ -140,7 +140,6 @@ class Goods extends Base
             ]
         ];
         */
-        dump($res);
         // 规格值ids组合--商品规格SKU的映射关系 页面需要使用
         /*
         $goodsInfo['goodsSku'] = [
@@ -169,9 +168,6 @@ class Goods extends Base
         }
         // 数据最终在js中使用，需要转化为json格式，用于输出到js中
         $valueIdsMap = json_encode($valueIdsMap);
-
-
-        dump($goodsInfo);
 
         return view('', [
             'goodsInfo' => $goodsInfo,

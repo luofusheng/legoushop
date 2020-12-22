@@ -1,0 +1,272 @@
+
+    <!-- 引入商品详情页的css 文件 -->
+    <link rel="stylesheet" href="/static/home/css/cartlist.css">
+
+
+<!-- 主体内容 start -->
+<div class="cart wrap">
+    <h4>
+        全部商品
+        <span>{:count($list)}</span>
+    </h4>
+    <div class="cart_main">
+        <div class="cart_head">
+            <div class="head_item_l">
+                <input type="checkbox" class="check_all"> 全部
+            </div>
+            <div class="head_item_l">
+                商品
+            </div>
+            <div class="head_item">
+                单价（元）
+            </div>
+            <div class="head_item">
+                数量
+            </div>
+            <div class="head_item">
+                小计（元）
+            </div>
+            <div class="head_item">
+                操作
+            </div>
+        </div>
+        <div class="cart_body">
+            {foreach $list as $v}
+            <div class="cart_list" cart_id="{$v.id}" number="{$v.number}">
+                <div class="list_item_l">
+                    <input type="checkbox" class="row_check" {if($v.is_selected)}checked="checked"{/if}>
+                    <img src="{$v.goodsSpu['goods_logo']}" alt="">
+                    {$v.goodsSpu['name']}
+                </div>
+                <div class="list_item_l">
+                    {$v.goodsSku['spec_name_values']}
+                </div>
+                <div class="list_item numbers price">
+                    {$v.goodsSku['price']}
+                </div>
+                <div class="list_item">
+                    <div class="count">
+                        <a class="reduce" href="javascript:;">-</a>
+                        <input class="number" type="text" value="{$v.number}">
+                        <a class="add" href="javascript:;">+</a>
+                    </div>
+                </div>
+                <div class="list_item numbers sum">
+                    {$v.goodsSku['price'] * $v.number}
+                </div>
+                <div class="list_item">
+                    <a href="javascript:;" class="delete">删除</a>
+                </div>
+            </div>
+            {/foreach}
+        </div>
+        <div class="cart_tool clearfix">
+            <div class="select_all fl">
+                <input type="checkbox" class="check_all">
+                全选
+            </div>
+<!--            <div class="option fl">-->
+<!--                <a href="javascript:;">删除选中的商品</a>-->
+<!--            </div>-->
+            <div class="money-box fr">
+                <div class="chosed">
+                    已选择
+                    <span id="total_number">4</span>
+                    件商品
+                </div>
+                <div class="sumprice">
+                    总价：
+                    <span class="summoney" id="total_price">￥4700</span>
+                </div>
+                <div class="sumbtn">
+                    <a class="sum_btn" href="javascript:;">结算</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- 主体内容 end -->
+
+
+<script src="/static/home/js/jquery.min.js"></script>
+<script>
+    $(function() {
+
+        // 重新计算已选商品数量和金额
+        let changeTotal = function() {
+            // 获取到选中的行 .row_check选中的
+            let totalNumber = 0;
+            let totalPrice = 0;
+            $('.row_check:checked').each(function (i,v) {
+                totalNumber += parseInt($(v).closest('.cart_list').find('.number').val());
+                totalPrice += parseFloat($(v).closest('.cart_list').find('.sum').html());
+            });
+            // 将累加的价格和数量放到页面中
+            $('#total_number').html(totalNumber);
+            $('#total_price').html('￥' + totalPrice);
+        };
+
+        /**
+         * 修改购买数量
+         *
+         * @param number 新的数量
+         * @param element 调用该函数的dom节点
+         */
+        let changeNum = function(number, element) {
+            // 需要参数 id number
+            let data = {
+                'id': $(element).closest('.cart_list').attr('cart_id'),
+                'number': number
+            };
+            // 发送ajax请求
+            $.post('/home/cart/change_num', data, function (res) {
+                if (res.code == 0) {    // 修改成功
+                    // 将新的数量展示到页面
+                    $(element).closest('.cart_list').find('.number').val(number);
+                    // 将新的数量修改到当前行商品的number属性上，用于出错后恢复数据
+                    $(element).closest('.cart_list').attr('number', number);
+                    // 重新计算小计金额
+                    // 取当前行的单价
+                    let price = parseFloat($(element).closest('.cart_list').find('.price').html());
+                    // 计算小计金额
+                    let sum = price * number;
+                    // 将小计金额放到页面上
+                    $(element).closest('.cart_list').find('.sum').html(sum);
+
+                    // 重新计算已选商品数量和金额
+                    changeTotal();
+                } else {    // 修改失败
+                    alert(res.msg);
+                }
+
+            }, 'json');
+        };
+
+        // 页面刷新，直接判断，全选是否应该被选中
+        let checkAll = function() {
+            // 判断选中的行数和总行数是否相等
+            let status = $('.row_check:checked').length == $('.row_check').length;
+            // 设置全选的选中状态 checked属性
+            $('.check_all').prop('checked', status);
+        };
+
+
+        // 修改购买数量
+        // +号
+        $('.add').click(function () {
+            let number = parseInt($(this).prev('input').val());
+            number += 1;
+            // 调用封装的函数
+            changeNum(number, this);
+        });
+        // -号
+        $('.reduce').click(function () {
+            let number = parseInt($(this).next('input').val());
+            if (number == 1) return;
+            number -= 1;
+            // 调用封装的函数
+            changeNum(number, this);
+        });
+
+        // input输入框直接修改
+        $('.number').change(function () {
+            let number = $(this).val();
+            // 检测输入的值，是否为数字
+            if (isNaN(number)) {    // 不是数字
+                alert('购买数量必须是数字');
+                let oldNumber = $(this).closest('.cart_list').attr('number');
+                $(this).val(oldNumber);
+                return;
+            }
+            if (parseInt(number) != number || number <= 0) {
+                // 数量必须是正整数
+                alert('购买数量必须是正整数');
+                let oldNumber = $(this).closest('.cart_list').attr('number');
+                $(this).val(oldNumber);
+                return;
+            }
+            // 调用封装的函数
+            changeNum(number, this);
+        });
+
+        // 删除
+        $('.delete').click(function () {
+            // 获取id删除条件
+            let data = {
+                'id': $(this).closest('.cart_list').attr('cart_id')
+            }
+            let that = this;
+            // 发送ajax请求
+            $.post('/home/cart/delete', data, function (res) {
+                if (res.code > 0) {
+                    alert(res.msg);
+                    return;
+                }
+                // 将当前行从页面移除
+                $(that).closest('.cart_list').remove();
+                // 重新计算已选商品数量和金额
+                changeTotal();
+            }, 'json');
+        });
+
+        // 每一行checkbox选中
+        $('.row_check').change(function () {
+            // 判断 全选是否应该选中
+            checkAll();
+            // 重新计算已选商品数量和金额
+            changeTotal();
+            // 修改选中的状态到购物车数据中
+            // 参数：id status
+            let data = {
+                'id': $(this).closest('.cart_list').attr('cart_id'),
+                'status': $(this).prop('checked') ? 1 : 0
+            };
+            // 发送ajax请求
+            $.post('/home/cart/change_status', data, function (res) {
+                if (res.code > 0) {
+                    alert(res.msg);
+                    return;
+                }
+            }, 'json');
+        });
+        // 全选效果
+        $('.check_all').click(function () {
+            // 获取全选的选中状态
+            let status = $(this).prop('checked');
+            // 将每一行的checkbox状态 设置成和全选一样
+            $('.row_check').prop('checked', status);
+            // 重新计算已选商品数量和金额
+            changeTotal()
+            // 修改选中的状态到购物车数据中
+            // 参数：id status
+            let data = {
+                'id': 'all',
+                'status': $(this).prop('checked') ? 1 : 0
+            };
+            // 发送ajax请求
+            $.post('/home/cart/change_status', data, function (res) {
+                if (res.code > 0) {
+                    alert(res.msg);
+                    return;
+                }
+            }, 'json');
+        });
+
+        // 结算
+        $('.sum_btn').click(function () {
+            // 判断是否有选中的购物记录
+            if ($('.row_check:checked').length == 0) {
+                alert('请选择要结算的商品');
+                return;
+            }
+            // 跳转到结算页
+            location.href = '/home/order/create';
+        });
+
+        // 页面加载后直接执行
+        checkAll();
+        changeTotal();
+    });
+</script>
+</body>
+</html>

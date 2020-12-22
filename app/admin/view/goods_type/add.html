@@ -312,7 +312,7 @@
         // 自定义验证规则
         form.verify({
             name: function (value, item) {
-                if (value.length > 20) {
+                if (value.length > 100) {
                     return '模型名称不能超过20个字符';
                 }
             }

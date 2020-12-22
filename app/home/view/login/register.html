@@ -1,0 +1,176 @@
+{__NOLAYOUT__}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>注册页面</title>
+    <!-- 引入layui -->
+    <link rel="stylesheet" href="/static/home/js/plugins/layui/css/layui.css">
+    <script src="/static/home/js/plugins/layui/layui.js"></script>
+    <!-- 初始化css -->
+    <link rel="stylesheet" href="/static/home/css/base.css">
+    <!-- 注册页面样式文件 -->
+    <link rel="stylesheet" href="/static/home/css/register.css">
+</head>
+<body>
+<div class="wrap">
+    <!-- 头部 -->
+    <div class="header">
+        <div class="logo">
+            <a href="#">
+                <img src="/static/home/img/logo.png" alt="">
+            </a>
+        </div>
+    </div>
+    <!-- 注册区域 -->
+    <div class="register">
+        <h3>
+            注册新用户
+            <em>
+                我有账号，去<a href="#">登录</a>
+            </em>
+        </h3>
+        <div class="register_form">
+            <form class="layui-form" action="/home/do_register" method="post">
+                <ul>
+                    <li>
+                        <label>手机号：</label>
+                        <input type="text" class="inp" id="phone" name="phone" lay-verify="phone_check">
+                    </li>
+                    <li>
+                        <label>短信验证码：</label>
+                        <input type="text" class="verify" lay-verify="captcha" name="captcha" placeholder="请输入手机短信验证码">
+                        <button type="button" id="send_code">发送验证码</button>
+                    </li>
+                    <li>
+                        <label>登录密码：</label>
+                        <input type="password" class="inp" name="password" placeholder="6到16个字符" lay-verify="password">
+                    </li>
+                    <li>
+                        <label>确认密码：</label>
+                        <input type="password" class="inp" name="repassword" lay-verify="repassword">
+                    </li>
+                    <li class="agree">
+                        <input type="checkbox" lay-skin="primary" lay-filter="agree"  lay-verify="agree" choose="0" id="agree"> 同意协议并注册
+                        <a href="#">《品优购用户协议》</a>
+                    </li>
+                    <li>
+                        <button  class="over" lay-submit lay-filter="register">完成注册</button>
+                    </li>
+                </ul>
+            </form>
+        </div>
+    </div>
+    <!-- 底部区域 -->
+    <div class="footer">
+        <p class="links">
+            关于我们 | 联系我们 | 联系客服 | 商家入驻 | 营销中心 | 手机品优购 | 友情链接 | 销售联盟 | 品优购社区 | 品优购公益
+        </p>
+        <p class="copyright">
+            地址：北京市昌平区建材城西路金燕龙办公楼一层 邮编：100096 电话：400-618-4000 传真：010-82935100 邮箱: abc.cn
+            皖ICP备08001421号
+        </p>
+    </div>
+</div>
+
+<script>
+    layui.use('form', function () {
+        var form = layui.form,
+            layer = layui.layer,
+            $ = layui.jquery;
+
+        // 页面加载事件
+        $(function () {
+            // 发送验证码
+            $('#send_code').click(function () {
+                // 获取手机号
+                var phone = $('#phone').val();
+
+                // 发送ajax请求
+                $.ajax({
+                    'url': '/home/send_captcha',
+                    'type': 'post',
+                    'data': 'phone='+phone,
+                    'dataType': 'json',
+                    'success': function (res) {
+                        // 提示
+                        layer.msg(res.msg);
+                        return;
+                    }
+                });
+
+                // 设置定时器，实现倒计时效果
+                var time = 60;
+                var timer = setInterval(function () {
+                    time--;
+                    if (time > 0) {
+                        $('#send_code').html('重新发送：' + time + '秒');
+                        $('#send_code').prop('disabled', true);
+                    } else {
+                        $('#send_code').html('发送验证码');
+                        $('#send_code').prop('disabled', false);
+                        clearInterval(timer);
+                    }
+                }, 1000);
+            });
+        });
+
+        // 监听勾选协议事件
+        form.on('checkbox(agree)', function (data) {
+            if (data.elem.checked == true) { // 如果被勾选中
+                $(data.elem).attr('choose', '1');
+            } else { // 如果没被勾选中
+                $(data.elem).attr('choose', '0');
+            }
+        });
+
+        // 监听提交事件
+        form.on('submit(register)', function (data) {
+            $.post('/home/do_register', data.field, function (res) {
+                if (res.code == 0) {
+                    // 注册成功
+                    layer.msg(res.msg, {
+                        icon: 1,
+                        time: 1000
+                    }, function () {
+                        // 跳转到登录页面
+                        location.href = '/home/login';
+                    });
+                } else {
+                    layer.msg(res.msg, {icon: 2});
+                }
+            }, 'json');
+            return false;
+        });
+
+
+        // 表单验证
+        form.verify({
+            phone_check: [
+                /^1[3-9]\d{9}$/
+                ,'手机号格式不正确'
+            ],
+            captcha: [
+                /^\d{4}$/
+                ,'验证码必须为4位数字'
+            ],
+            password: [
+                /^[\S]{6,12}$/
+                ,'密码必须6到12位，且不能出现空格'
+            ],
+            repassword: function(value, item) {
+                var password = $(item).closest('li').prev('li').find('input').val();
+                if (value != password) {
+                    return '确认密码不一致';
+                }
+            },
+            agree: function (value, item) {
+                if ($(item).attr('choose') != 1) {
+                    return '请点击同意协议并注册';
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
