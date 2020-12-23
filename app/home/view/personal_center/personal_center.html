@@ -267,11 +267,11 @@
             $('.del').click(function () {
                 let that = $(this);
                 layer.confirm('确定删除该收货地址吗?', {icon: 3, title:'提示'}, function(index){
-                    that.closest('.address_item').remove();
                     // 后端数据修改
                     let id = that.attr('address_id');
                     $.post('/home/address/del_address', {id:id}, function (res) {
                         if (res.code == 0) {
+                            that.closest('.address_item').remove();
                             layer.msg('删除成功');
                         } else {
                             layer.msg('删除失败');

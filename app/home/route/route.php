@@ -21,6 +21,7 @@ Route::get('logout', 'Login/logout');
 
 // 商品列表页
 Route::get('list', 'Goods/index');
+// 商品详情页
 Route::get('goods_detail', 'Goods/detail');
 
 // 添加购物车
@@ -45,6 +46,14 @@ Route::post('order/pay', 'Order/pay');
 Route::get('order/callback', 'Order/callback');
 // 支付宝异步通知地址notify
 Route::post('order/notify', 'Order/notify');
+// 清除无效订单，由服务器计划任务访问
+Route::get('order/clear', 'Order/clear');
+// 我的订单页面
+Route::get('order/my_order', 'Order/myOrder');
+// 删除待付款订单接口
+Route::post('order/del_order', 'Order/delOrder');
+// 我的订单页面去支付接口
+Route::get('order/to_pay', 'Order/toPay');
 
 // 个人中心
 Route::get('personal_center', 'PersonalCenter/personalCenter');

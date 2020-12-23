@@ -1,0 +1,223 @@
+
+    <link rel="stylesheet" href="/static/home/css/myorder.css">
+    <!-- 引入layui -->
+    <link rel="stylesheet" href="/static/home/js/plugins/layui/css/layui.css">
+    <script src="/static/home/js/plugins/layui/layui.js"></script>
+
+<!-- 主体内容 start -->
+<div class="my_order wrap">
+    <div class="title">我的订单</div>
+    <div class="nav_tabs clearfix">
+        <div class="active">全部订单</div>
+        <div>待付款</div>
+        <div>待收货</div>
+        <div>待评价</div>
+    </div>
+    <div class="head clearfix">
+        <div class="order_detail">订单详情</div>
+        <div class="consignee">收货人</div>
+        <div class="money">金额</div>
+        <div class="status">状态</div>
+    </div>
+    <div class="tabcontent">
+        <div>
+            {foreach $allOrder as $v}
+            <div class="order_item">
+                <div class="title clearfix">
+                    <div class="fl">{$v.create_time}　订单编号：{$v.order_sn}</div>
+                    {if ($v.status == 0)}
+                    <div class="fr del_order" order_id="{$v.id}"><a href="javascript:;" class="iconfont icon-shanchu"></a></div>
+                    <a href="/home/order/to_pay?order_sn={$v.order_sn}&total_price={$v.total_price}" class="fr">去付款</a>
+                    {/if}
+                </div>
+                <div class="body clearfix">
+                    <div class="order_detail">
+                        {foreach $v['orderGoods'] as $vv}
+                        <div class="order_goods_item clearfix">
+                            <img src="{$vv['goods_logo']}" class="fl">
+                            <div class="fl sku">
+                                {$vv['goods_name']} {$vv['spec_name_values']}
+                            </div>
+                            <div class="fl number">x {$vv['number']}</div>
+                        </div>
+                        {/foreach}
+                    </div>
+                    <div class="consignee">{$v.consignee}</div>
+                    <div class="money">￥{$v.total_price}</div>
+                    <div class="status">
+                        {switch $v.status}
+                            {case 0}待付款{/case}
+                            {case 1}待发货{/case}
+                            {case 2}待收货{/case}
+                            {case 3}待评价{/case}
+                            {case 4}已完成{/case}
+                            {case 5}已取消{/case}
+                            {case 6}已退货{/case}
+                            {case 7}已退款{/case}
+                        {/switch}
+                    </div>
+                </div>
+            </div>
+            {/foreach}
+        </div>
+        <div>
+            {foreach $toPayOrder as $v}
+            <div class="order_item">
+                <div class="title clearfix">
+                    <div class="fl">{$v.create_time}　订单编号：{$v.order_sn}</div>
+                    {if ($v.status == 0)}
+                    <div class="fr"><a href="#" class="iconfont icon-shanchu"></a></div>
+                    {/if}
+                </div>
+                <div class="body clearfix">
+                    <div class="order_detail">
+                        {foreach $v['orderGoods'] as $vv}
+                        <div class="order_goods_item clearfix">
+                            <img src="{$vv['goods_logo']}" class="fl">
+                            <div class="fl sku">
+                                {$vv['goods_name']} {$vv['spec_name_values']}
+                            </div>
+                            <div class="fl number">x {$vv['number']}</div>
+                        </div>
+                        {/foreach}
+                    </div>
+                    <div class="consignee">{$v.consignee}</div>
+                    <div class="money">￥{$v.total_price}</div>
+                    <div class="status">
+                        {switch $v.status}
+                        {case 0}待付款{/case}
+                        {case 1}待发货{/case}
+                        {case 2}待收货{/case}
+                        {case 3}待评价{/case}
+                        {case 4}已完成{/case}
+                        {case 5}已取消{/case}
+                        {case 6}已退货{/case}
+                        {case 7}已退款{/case}
+                        {/switch}
+                    </div>
+                </div>
+            </div>
+            {/foreach}
+        </div>
+        <div>
+            {foreach $toReceiveOrder as $v}
+            <div class="order_item">
+                <div class="title clearfix">
+                    <div class="fl">{$v.create_time}　订单编号：{$v.order_sn}</div>
+                    {if ($v.status == 0)}
+                    <div class="fr"><a href="#" class="iconfont icon-shanchu"></a></div>
+                    {/if}
+                </div>
+                <div class="body clearfix">
+                    <div class="order_detail">
+                        {foreach $v['orderGoods'] as $vv}
+                        <div class="order_goods_item clearfix">
+                            <img src="{$vv['goods_logo']}" class="fl">
+                            <div class="fl sku">
+                                {$vv['goods_name']} {$vv['spec_name_values']}
+                            </div>
+                            <div class="fl number">x {$vv['number']}</div>
+                        </div>
+                        {/foreach}
+                    </div>
+                    <div class="consignee">{$v.consignee}</div>
+                    <div class="money">￥{$v.total_price}</div>
+                    <div class="status">
+                        {switch $v.status}
+                        {case 0}待付款{/case}
+                        {case 1}待发货{/case}
+                        {case 2}待收货{/case}
+                        {case 3}待评价{/case}
+                        {case 4}已完成{/case}
+                        {case 5}已取消{/case}
+                        {case 6}已退货{/case}
+                        {case 7}已退款{/case}
+                        {/switch}
+                    </div>
+                </div>
+            </div>
+            {/foreach}
+        </div>
+        <div>
+            {foreach $toCommentOrder as $v}
+            <div class="order_item">
+                <div class="title clearfix">
+                    <div class="fl">{$v.create_time}　订单编号：{$v.order_sn}</div>
+                    {if ($v.status == 0)}
+                    <div class="fr"><a href="#" class="iconfont icon-shanchu"></a></div>
+                    {/if}
+                </div>
+                <div class="body clearfix">
+                    <div class="order_detail">
+                        {foreach $v['orderGoods'] as $vv}
+                        <div class="order_goods_item clearfix">
+                            <img src="{$vv['goods_logo']}" class="fl">
+                            <div class="fl sku">
+                                {$vv['goods_name']} {$vv['spec_name_values']}
+                            </div>
+                            <div class="fl number">x {$vv['number']}</div>
+                        </div>
+                        {/foreach}
+                    </div>
+                    <div class="consignee">{$v.consignee}</div>
+                    <div class="money">￥{$v.total_price}</div>
+                    <div class="status">
+                        {switch $v.status}
+                        {case 0}待付款{/case}
+                        {case 1}待发货{/case}
+                        {case 2}待收货{/case}
+                        {case 3}待评价{/case}
+                        {case 4}已完成{/case}
+                        {case 5}已取消{/case}
+                        {case 6}已退货{/case}
+                        {case 7}已退款{/case}
+                        {/switch}
+                    </div>
+                </div>
+            </div>
+            {/foreach}
+        </div>
+    </div>
+</div>
+<!-- 主体内容 end -->
+
+
+<script>
+    layui.use(['layer'], function () {
+        var layer = layui.layer;
+        var $ = layui.jquery;
+
+        $(function() {
+            // 菜单切换
+            $('.nav_tabs>div').click(function() {
+                $(this).addClass('active');
+                $(this).siblings().removeClass('active');
+                // 得到当前的索引号
+                let index = $(this).index();
+                // 让下方内容区相应索引号的内容显示出来，其余隐藏
+                $('.tabcontent>div').eq(index).show().siblings().hide();
+            });
+
+            // 删除订单
+            $('.del_order').click(function () {
+                let that = $(this);
+                layer.confirm('确定删除该订单吗?', {icon: 3, title:'提示'}, function(index){
+                    // 后端数据修改
+                    let id = that.attr('order_id');
+                    $.post('/home/order/del_order', {id:id}, function (res) {
+                        if (res.code == 0) {
+                            that.closest('.order_item').remove();
+                            layer.msg('删除成功');
+                        } else {
+                            layer.msg('删除失败');
+                        }
+                    }, 'json');
+
+                });
+
+            });
+        });
+    });
+</script>
+</body>
+</html>

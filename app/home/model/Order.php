@@ -10,5 +10,10 @@ use think\Model;
  */
 class Order extends Model
 {
-    //
+    // 模型关联
+    // 关联订单商品表
+    public function orderGoods()
+    {
+        return $this->hasMany(OrderGoods::class);
+    }
 }

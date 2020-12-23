@@ -322,4 +322,136 @@ class Order extends Base
             return;
         }
     }
+
+    // 清除无效订单，由服务器计划任务访问
+    public function clear()
+    {
+        $order = \app\home\model\Order::where('status', 0)
+            ->whereTime('create_time', '<', '-1 hours')
+            ->select();
+        if (!$order->isEmpty()) {   // 如果存在无效订单
+            // 获取所有无效订单的id
+            $ids = array_column($order->toArray(), 'id');
+            // 启动事务
+            Db::startTrans();
+            try {
+                \app\home\model\Order::destroy($ids);
+                OrderGoods::where('order_id', 'in', $ids)->delete();
+                // 提交事务
+                Db::commit();
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::rollback();
+            }
+        }
+    }
+
+    // 我的订单页面
+    public function myOrder()
+    {
+        // 登录检测
+        if (!session('?user_info')) {
+            // 没有登录，跳转到登录页
+            // 设置登录成功后的跳转地址
+            session('back_url', '/home/cart_list');
+            return redirect('/home/login');
+        }
+
+        // 查询所有订单
+        $allOrder = \app\home\model\Order::with(['orderGoods'])
+            ->where('user_id', session('user_info.id'))
+            ->select();
+        if ($allOrder->isEmpty()) {
+            $allOrder = [];
+        } else {
+            $allOrder = $allOrder->toArray();
+        }
+        // 查询待付款订单
+        $toPayOrder = \app\home\model\Order::with(['orderGoods'])
+            ->where('user_id', session('user_info.id'))
+            ->where('status', 0)
+            ->select();
+        if ($toPayOrder->isEmpty()) {
+            $toPayOrder = [];
+        } else {
+            $toPayOrder = $toPayOrder->toArray();
+        }
+        // 代收货订单
+        $toReceiveOrder = \app\home\model\Order::with(['orderGoods'])
+            ->where('user_id', session('user_info.id'))
+            ->where('status', 2)
+            ->select();
+        if ($toReceiveOrder->isEmpty()) {
+            $toReceiveOrder = [];
+        } else {
+            $toReceiveOrder = $toReceiveOrder->toArray();
+        }
+        // 代评价订单
+        $toCommentOrder = \app\home\model\Order::with(['orderGoods'])
+            ->where('user_id', session('user_info.id'))
+            ->where('status', 3)
+            ->select();
+        if ($toCommentOrder->isEmpty()) {
+            $toCommentOrder = [];
+        } else {
+            $toCommentOrder = $toCommentOrder->toArray();
+        }
+
+        return view('', [
+            'allOrder' => $allOrder,
+            'toPayOrder' => $toPayOrder,
+            'toReceiveOrder' => $toReceiveOrder,
+            'toCommentOrder' => $toReceiveOrder
+        ]);
+    }
+
+    // 删除待付款订单
+    public function delOrder()
+    {
+        $id = trim(input('post.id', '', 'strip_tags'));
+        $order = \app\home\model\Order::find($id);
+        if ($order->status == 0) {  // 为待付款订单
+            // 删除订单
+            // 启动事务
+            Db::startTrans();
+            try {
+                $order->delete();
+                OrderGoods::where('order_id', $id)->delete();
+                // 提交事务
+                Db::commit();
+            } catch (\Exception $e) {
+                // 回滚事务
+                Db::rollback();
+                return json([
+                    'code' => 2,
+                    'msg' => '删除失败'
+                ]);
+            }
+
+            return json([
+                'code' => 0,
+                'msg' => '删除成功'
+            ]);
+        } else {
+            return json([
+                'code' => 1,
+                'msg' => '删除失败'
+            ]);
+        }
+    }
+
+    // 我的订单页面去支付接口
+    public function toPay()
+    {
+        $orderSn = trim(input('get.order_sn', '', 'strip_tags'));
+        $totalPrice = trim(input('get.total_price', '', 'strip_tags'));
+
+        // 渲染支付页面
+        $payType = Config::get('shop.pay_type');
+        return view('pay', [
+            'orderSn' => $orderSn,
+            'payType' => $payType,
+            'totalPrice' => $totalPrice
+        ]);
+    }
 }
