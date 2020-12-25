@@ -3,6 +3,7 @@ declare (strict_types = 1);
 
 namespace app\home\controller;
 
+use app\home\logic\GoodsLogic;
 use app\home\model\GoodsCategory;
 use app\home\model\GoodsSpecValue;
 use app\home\model\GoodsSpu;
@@ -13,28 +14,50 @@ class Goods extends Base
     public function index()
     {
         $id = (int)input('get.id', '', 'strip_tags');
-        $limit = request()->param('limit');
-        $page = request()->param('page');
+        $keywords = input('get.keywords', '', 'strip_tags');
+        $limit = input('get.limit', '10', 'strip_tags');
+        $page = input('get.page', '1', 'strip_tags');
 
-        // 查询出该分类
-        $goodsCategory = GoodsCategory::find($id);
-        if ($goodsCategory->pid == 0) { // 一级分类
-            $crumb = $goodsCategory->name;
+        if (empty($keywords)) {
+            // 获取指定分类下的商品列表
 
-            // 查询商品列表
-            $categoryIds = GoodsCategory::field('id')->where('pid', $id)->select();
-            if ($categoryIds->isEmpty()) {  // 如果该一级分类下没有二级分类
-                $goodsList = [];
-                $count = 0;
-            } else {    // 如果该一级分类下有二级分类
-                // 查询出该一级分类下的所有二级分类的商品
-                $goodsSpu = GoodsSpu::field('id,name,goods_logo,price')
-                    ->where('goods_category_id', 'in', array_column($categoryIds->toArray(), 'id'))
-                    ->paginate([
-                        'list_row' => $limit,
-                        'var_page' => 'page',
-                        'page' => $page
-                    ]);
+            // 查询出该分类
+            $goodsCategory = GoodsCategory::find($id);
+            if ($goodsCategory->pid == 0) { // 一级分类
+                $crumb = $goodsCategory->name;
+
+                // 查询商品列表
+                $categoryIds = GoodsCategory::field('id')->where('pid', $id)->select();
+                if ($categoryIds->isEmpty()) {  // 如果该一级分类下没有二级分类
+                    $goodsList = [];
+                    $count = 0;
+                } else {    // 如果该一级分类下有二级分类
+                    // 查询出该一级分类下的所有二级分类的商品
+                    $goodsSpu = GoodsSpu::field('id,name,goods_logo,price')
+                        ->where('goods_category_id', 'in', array_column($categoryIds->toArray(), 'id'))
+                        ->paginate([
+                            'list_rows' => $limit,
+                            'var_page' => 'page',
+                            'page' => $page
+                        ]);
+                    if ($goodsSpu->isEmpty()) { // 如果该分类下没有商品
+                        $goodsList = [];
+                        $count = 0;
+                    } else {
+                        $goodsList = $goodsSpu->toArray()['data'];
+                        $count = $goodsSpu->total();
+                    }
+                }
+
+            } else {    // 二级分类
+                $crumb = [$goodsCategory->pid_path_name, $goodsCategory->name];
+
+                // 查询出该分类下的商品
+                $goodsSpu = GoodsSpu::field('id,name,goods_logo,price')->where('goods_category_id', $id)->paginate([
+                    'list_rows' => $limit,
+                    'var_page' => 'page',
+                    'page' => $page
+                ]);
                 if ($goodsSpu->isEmpty()) { // 如果该分类下没有商品
                     $goodsList = [];
                     $count = 0;
@@ -43,31 +66,25 @@ class Goods extends Base
                     $count = $goodsSpu->total();
                 }
             }
-
-        } else {    // 二级分类
-            $crumb = [$goodsCategory->pid_path_name, $goodsCategory->name];
-
-            // 查询出该分类下的商品
-            $goodsSpu = GoodsSpu::field('id,name,goods_logo,price')->where('goods_category_id', $id)->paginate([
-                'list_row' => $limit,
-                'var_page' => 'page',
-                'page' => $page
-            ]);
-            if ($goodsSpu->isEmpty()) { // 如果该分类下没有商品
-                $goodsList = [];
-                $count = 0;
-            } else {
-                $goodsList = $goodsSpu->toArray()['data'];
-                $count = $goodsSpu->total();
+        } else {
+            // 从elasticsearch中搜索
+            try {
+                $crumb = $keywords;
+                $list = GoodsLogic::search()->toArray();
+                $goodsList = $list['data'];
+                $count = $list['total'];
+            } catch (\Exception $e) {
+                return '服务器异常';
             }
         }
-
 
         return view('', [
             'crumb' => $crumb,
             'goodsList' => $goodsList,
             'count' => $count,
-            'id' => $id
+            'id' => $id,
+            'keywords' => $keywords,
+            'page' => $page
         ]);
     }
 
