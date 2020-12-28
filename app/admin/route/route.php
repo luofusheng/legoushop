@@ -5,6 +5,8 @@ use think\facade\Route;
 Route::get('/', 'index/index');
 // 获取初始化数据
 Route::get('get-system-init', 'index/getSystemInit');
+// 缓存清理接口
+Route::get('clear-cache', 'index/clearCache');
 // 主页
 Route::get('home', 'index/home');
 // 登录

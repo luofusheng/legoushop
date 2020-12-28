@@ -44,7 +44,8 @@ class Index extends BaseController
     }
 
     // 获取初始化数据
-    public function getSystemInit(){
+    public function getSystemInit()
+    {
         $homeInfo = [
             'title' => '首页',
             'href'  => '/admin/home/',
@@ -61,6 +62,13 @@ class Index extends BaseController
             'menuInfo' => $menuInfo,
         ];
         return json($systemInit);
+    }
+
+    // 缓存清理接口
+    public function clearCache()
+    {
+        // 删除临时图片
+        delete_dir('./uploads/image/temp');
     }
 
     // 获取菜单列表

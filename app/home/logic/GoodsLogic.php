@@ -25,11 +25,11 @@ class GoodsLogic
                             'query' => $keywords,
                             'boost' => 5, // 权重大
                         ]]],
-                        ['match' => ['category_pid_pathname' => [
+                        ['match' => ['category_name' => [
                             'query' => $keywords,
                             'boost' => 4,
                         ]]],
-                        ['match' => ['category_name' => [
+                        ['match' => ['category_pid_pathname' => [
                             'query' => $keywords,
                             'boost' => 3,
                         ]]],

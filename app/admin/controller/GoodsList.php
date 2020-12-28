@@ -575,20 +575,20 @@ class GoodsList extends Base
         Db::startTrans();
         try {
             // 更新goods_spu表
-            GoodsSpu::update([
-                'name' => $params['name'],
-                'keywords' => $params['keywords'],
-                'desc' => $params['desc'],
-                'goods_logo' => $params['logo'],
-                'goods_brand_id' => $params['brand'],
-                'goods_category_id' => $params['category'],
-                'is_on_sale' => empty($params['is_on_sale']) ? '下架' : '上架',
-                'is_free_shipping' => empty($params['is_free_shipping']) ? '不包邮' : '包邮',
-                'goods_attr' => json_encode($params['attr'], JSON_UNESCAPED_UNICODE),
-                'price' => $params['price'],
-                'stock' => $params['stock'],
-                'goods_type_id' => $params['goods_type']
-            ], ['id' => $params['goods_spu_id']]);
+            $goodsSpuModel = GoodsSpu::find($params['goods_spu_id']);
+            $goodsSpuModel->name = $params['name'];
+            $goodsSpuModel->keywords = $params['keywords'];
+            $goodsSpuModel->desc = $params['desc'];
+            $goodsSpuModel->goods_logo = $params['logo'];
+            $goodsSpuModel->goods_brand_id = $params['brand'];
+            $goodsSpuModel->goods_category_id = $params['category'];
+            $goodsSpuModel->is_on_sale = empty($params['is_on_sale']) ? '下架' : '上架';
+            $goodsSpuModel->is_free_shipping = empty($params['is_free_shipping']) ? '不包邮' : '包邮';
+            $goodsSpuModel->goods_attr = json_encode($params['attr'], JSON_UNESCAPED_UNICODE);
+            $goodsSpuModel->price = $params['price'];
+            $goodsSpuModel->stock = $params['stock'];
+            $goodsSpuModel->goods_type_id = $params['goods_type'];
+            $goodsSpuModel->save();
             // 更新goods_detail表
             $goodsDetail = GoodsDetail::where('goods_spu_id', $params['goods_spu_id'])->find();
             $goodsDetail->content = htmlspecialchars($newContent);
